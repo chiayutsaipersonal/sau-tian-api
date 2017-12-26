@@ -12,7 +12,7 @@ const ormVerbose = false
 
 const sqlite = {
   dialect: 'sqlite',
-  storage: path.resolve('./database/sauTian.db'),
+  storage: path.resolve('./data/sauTian.db'),
   database: config.app.reference,
   logging: ormVerbose ? logging.warning : false,
   define: {
@@ -67,10 +67,10 @@ module.exports = {
   liveData: {
     path: eVars.LIVE_DATABASE_FILE_PATH,
     tables: [
-      { model: 'Clients', table: 'customer.DBF' },
-      { model: 'Products', table: 'item.DBF' },
-      { model: 'Invoices', table: 'sal.DBF' },
-      { model: 'Sales', table: 'saldet.DBF' },
+      { modelName: 'Clients', tableName: 'customer.DBF' },
+      { modelName: 'Products', tableName: 'item.DBF' },
+      { modelName: 'Invoices', tableName: 'sal.DBF' },
+      { modelName: 'Sales', tableName: 'saldet.DBF' },
     ],
     disConFactorFile: path.resolve('./data/disConFactor.json'),
   },

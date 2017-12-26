@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('sau-tian-api:server')
+// load npm packages
 const express = require('express')
 const favicon = require('serve-favicon')
 const logger = require('morgan')
@@ -9,17 +9,25 @@ const path = require('path')
 // const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 
+// load custom configurations
+const config = require('./config/app')
+
+// load controllers
+const database = require('./controllers/database')
 const logging = require('./controllers/logging')
 
+// load route handlers
 const index = require('./routes/index')
 const users = require('./routes/users')
 
+// instantiate express app
 const app = express()
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'hbs')
 
+// load pre-routing global middlewares
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 if (app.get('env') === 'development') app.use(logger('dev'))
 app.use(bodyParser.json())
@@ -27,6 +35,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')))
 
+// application routing setup
 app.use('/', index)
 app.use('/users', users)
 
@@ -48,7 +57,7 @@ app.use(function (error, req, res, next) {
 })
 
 // Get port from environment and store in Express
-const port = normalizePort(process.env.PORT || '3000')
+const port = normalizePort(config.hosting.port || '3000')
 app.set('port', port)
 
 // Create HTTP server.
@@ -61,7 +70,17 @@ server.listen(port)
 server.on('listening', () => {
   let addr = server.address()
   let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
-  debug('Listening on ' + bind)
+  logging.warning('Listening on ' + bind)
+  return database
+    .initialize()
+    .then(message => {
+      logging.warning(message)
+      return Promise.resolve()
+    })
+    .catch(error => {
+      logging.error(error, 'Database for working data initialization failure')
+      process.exit(1)
+    })
 })
 
 // Normalize a port into a number, string, or false
