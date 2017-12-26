@@ -8,6 +8,7 @@
     "debug": "~3.1.0",
     "dotenv": "^4.0.0",
     "express": "~4.16.2",
+    "fs-extra": "^5.0.0",
     "hbs": "~4.0.1",
     "morgan": "~1.9.0",
     "nodemon": "^1.14.3",
@@ -33,7 +34,7 @@
   "scripts": {
     "lint": "eslint *.js --fix",
     "start": "npm run dev",
-    "prod": "set NODE_ENV=production && node ./app.js",
-    "dev": "cross-env NODE_ENV=development nodemon ./app.js"
+    "prod": "set NODE_ENV=production && node ./server.js",
+    "dev": "cross-env NODE_ENV=development nodemon ./server.js"
   }
 }
