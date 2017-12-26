@@ -12,7 +12,7 @@ const ormVerbose = false
 
 const sqlite = {
   dialect: 'sqlite',
-  storage: path.resolve(path.join('./database', 'sauTian.db')),
+  storage: path.resolve('./database/sauTian.db'),
   database: config.app.reference,
   logging: ormVerbose ? logging.warning : false,
   define: {
@@ -64,18 +64,20 @@ module.exports = {
     staging: mysql,
     production: sqlite,
   },
-  liveSourcePath: eVars.LIVE_DATABASE_FILE_PATH,
+  liveData: {
+    path: eVars.LIVE_DATABASE_FILE_PATH,
+    tables: [
+      { model: 'Clients', table: 'customer.DBF' },
+      { model: 'Products', table: 'item.DBF' },
+      { model: 'Invoices', table: 'sal.DBF' },
+      { model: 'Sales', table: 'saldet.DBF' },
+    ],
+    disConFactorFile: path.resolve('./data/disConFactor.json'),
+  },
   dropSchemaSequence,
 }
 
 /*
-# live data source - FoxPro
-LIVE_DATABASE_TABLES=CLIENT_TABLE,PRODUCT_TABLE,INVOICE_TABLE,SALES_TABLE
-CLIENT_TABLE=customer.DBF
-PRODUCT_TABLE=item.DBF
-INVOICE_TABLE=sal.DBF
-SALES_TABLE=saldet.DBF
-DIS_CON_FACTOR_FILE_PATH=./database/disConFactor.json
 # client information
 COMP_UCODE=42777910
 DIS_NO=400005

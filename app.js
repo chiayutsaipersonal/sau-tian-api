@@ -9,6 +9,8 @@ const path = require('path')
 // const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser')
 
+const logging = require('./controllers/logging')
+
 const index = require('./routes/index')
 const users = require('./routes/users')
 
@@ -77,10 +79,10 @@ server.on('error', error => {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges')
+      logging.error(bind + ' requires elevated privileges')
       process.exit(1)
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use')
+      logging.error(bind + ' is already in use')
       process.exit(1)
     default:
       throw error
