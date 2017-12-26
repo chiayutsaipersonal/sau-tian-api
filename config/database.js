@@ -35,7 +35,7 @@ const mysql = {
   username: eVars.MYSQL_ACCOUNT,
   password: eVars.MYSQL_PASS,
   logging: ormVerbose ? logging.warning : false,
-  timezone: config.app.hosting.timezone,
+  timezone: config.app.timezone,
   pool: {
     max: 5, // default: 5
     min: 0, // default: 0

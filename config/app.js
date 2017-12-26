@@ -1,6 +1,9 @@
 require('dotenv').config()
 
-const hosting = {
+const reference = 'sauTian'
+const title = '秀田銷售資料拋轉程式'
+
+const hostingInformation = {
   development: {
     protocol: 'http',
     domain: 'localhost',
@@ -21,8 +24,20 @@ const hosting = {
   },
 }
 
+const protocol = hostingInformation[process.env.NODE_ENV].protocol
+const domain = hostingInformation[process.env.NODE_ENV].domain
+const port = hostingInformation[process.env.NODE_ENV].port
+const timezone = hostingInformation[process.env.NODE_ENV].timezone
+const hostUrl = `${protocol}://${domain}:${port}`
+
 module.exports = {
-  reference: 'sauTian',
-  title: '秀田銷售資料拋轉程式',
-  hosting: hosting[process.env.NODE_ENV],
+  reference,
+  title,
+  hostingInformation: {
+    protocol,
+    domain,
+    port,
+  },
+  hostUrl,
+  timezone,
 }
