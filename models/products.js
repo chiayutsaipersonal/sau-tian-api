@@ -1,22 +1,22 @@
 module.exports = (sequelize, DataTypes) => {
   const Products = sequelize.define('products', {
-    ITEMNO: {
+    id: { // ITEMNO
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    SITEMNO: {
+    // sapId: { // SITEMNO
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    name: { // ITEMNAME
       type: DataTypes.STRING,
       allowNull: true,
     },
-    ITEMNAME: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    STOCKQTY: {
+    stockQty: { // original field: STOCKQTY, output field: inv
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    STKUNIT: {
+    unit: { // STKUNIT
       type: DataTypes.STRING,
       allowNull: true,
     },

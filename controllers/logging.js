@@ -4,8 +4,8 @@ module.exports = {
   console: messageToConsole,
   warning: warningToConsole,
   error: errorToConsole,
-  reject: rejectPromise,
-  resolve: resolvePromise,
+  // reject: rejectPromise, // doesn't seem to work
+  // resolve: resolvePromise, // doesn't seem to work
 }
 
 function messageToConsole (message) {
@@ -30,16 +30,18 @@ function errorToConsole (error, customMessage = null) {
   warningToConsole(error.stack)
 }
 
-function rejectPromise (customMessage = null) {
-  return error => {
-    errorToConsole(error, customMessage)
-    return Promise.reject(error)
-  }
-}
+// doesn't seem to work
+// function rejectPromise (customMessage = null) {
+//   return error => {
+//     errorToConsole(error, customMessage)
+//     return Promise.reject(error)
+//   }
+// }
 
-function resolvePromise (customMessage = null) {
-  return resolved => {
-    if (customMessage) warningToConsole(customMessage)
-    return Promise.resolve(resolved)
-  }
-}
+// doesn't seem to work
+// function resolvePromise (customMessage = null) {
+//   return resolved => {
+//     if (customMessage) warningToConsole(customMessage)
+//     return Promise.resolve(resolved)
+//   }
+// }

@@ -1,39 +1,39 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Clients = sequelize.define('clients', {
-    CUSTNO: {
+    id: { // CUSTNO
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    CUSTABBR: {
+    name: { // CUSTABBR
       type: DataTypes.STRING,
       allowNull: true,
     },
-    CON1: {
+    registrationId: { // UNIFORM
       type: DataTypes.STRING,
       allowNull: true,
     },
-    UNIFORM: {
+    contact: { // CON1
       type: DataTypes.STRING,
       allowNull: true,
     },
-    COMPZIP: {
+    zipCode: { // COMPZIP
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AREANO: {
+    area: { // AREANO
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    COMPADDR: {
+    address: { // COMPADDR
       type: DataTypes.STRING,
       allowNull: true,
     },
-    TEL1: {
+    telephone: { // TEL1
       type: DataTypes.STRING,
       allowNull: true,
     },
-    FAX: {
+    fax: { // FAX
       type: DataTypes.STRING,
       allowNull: true,
     },

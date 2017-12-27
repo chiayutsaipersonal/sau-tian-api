@@ -1,22 +1,22 @@
 module.exports = (sequelize, DataTypes) => {
   const Sales = sequelize.define('sales', {
-    BNO: {
+    id: { // BNO
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    SNO: {
+    invoiceId: { // SNO
       type: DataTypes.STRING,
       allowNull: true,
     },
-    ITEMNO: {
+    productId: { // ITEMNO
       type: DataTypes.STRING,
       allowNull: true,
     },
-    QTY: {
+    quantity: { // QTY
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },
-    PRICE: {
+    price: { // PRICE
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },

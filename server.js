@@ -35,7 +35,7 @@ let server = null
 logging.warning('initialize essential system components - pre-startup')
 // set init sequence
 let preStartupInitSequence = [
-  database.initialize(), // working database
+  database.initialize(true), // working database
   'initialize essential systems 1...', // dummy stub
   'initialize essential systems 2...', // dummy stub
 ]

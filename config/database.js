@@ -56,14 +56,16 @@ const mysql = {
   operatorsAliases: false,
 }
 
-const dropSchemaSequence = []
+const dropSchemaSequence = [
+  'sales',
+  'invoices',
+  'factors',
+  'products',
+  'clients',
+]
 
 module.exports = {
-  workingCopy: {
-    development: sqlite,
-    staging: mysql,
-    production: sqlite,
-  },
+  workingDb: eVars.NODE_ENV === 'staging' ? mysql : sqlite,
   liveData: {
     path: eVars.LIVE_DATABASE_FILE_PATH,
     tables: [
@@ -73,6 +75,11 @@ module.exports = {
       { modelName: 'Sales', tableName: 'saldet.DBF' },
     ],
     disConFactorFile: path.resolve('./data/disConFactor.json'),
+  },
+  models: {
+    path: path.resolve('./models'),
+    fileNames: null,
+    modelReferences: null,
   },
   dropSchemaSequence,
 }

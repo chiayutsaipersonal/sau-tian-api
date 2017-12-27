@@ -1,18 +1,18 @@
 module.exports = (sequelize, DataTypes) => {
   const Invoices = sequelize.define('invoices', {
-    SNO: {
+    id: { // SNO
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    DATE2: {
+    date: { // DATE2
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    CUSTNO: {
+    clientId: { // CUSTNO
       type: DataTypes.STRING,
       allowNull: true,
     },
-    EMPNO: {
+    employeeId: { // EMPNO
       type: DataTypes.STRING,
       allowNull: true,
     },
