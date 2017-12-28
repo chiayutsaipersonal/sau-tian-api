@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    area: { // AREANO
+    areaId: { // AREANO
       type: DataTypes.INTEGER,
       allowNull: true,
     },

@@ -3,18 +3,19 @@ const Promise = require('bluebird')
 const logging = require('../logging')
 
 module.exports = (db, force = false) => {
+  let dropSchemaSequence = db.workingDataConfig.dropSchemaSequence
   if (force) {
     logging.warning('All working data tables will be removed in sequence')
     return Promise
-      .each(db.config.dropSchemaSequence, targetTableName => {
+      .each(dropSchemaSequence, targetTableName => {
         return db.sequelize
           .dropSchema(targetTableName)
           .then(() => {
-            logging.console(`${targetTableName} data table is removed...`)
+            logging.console(`${targetTableName} data table is removed`)
             return Promise.resolve()
           })
           .catch(error => {
-            logging.error(error, `Failed to remove ${targetTableName} data table ...`)
+            logging.error(error, `Failed to remove ${targetTableName} data table`)
             return Promise.reject(error)
           })
       })

@@ -4,10 +4,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    // sapId: { // SITEMNO
-    //   type: DataTypes.STRING,
-    //   allowNull: true,
-    // },
     name: { // ITEMNAME
       type: DataTypes.STRING,
       allowNull: true,

@@ -11,10 +11,10 @@ const path = require('path')
 const Promise = require('bluebird')
 
 // load custom configurations
-const config = require('./config/app')
+const appConfig = require('./config/app')
 
 // load controllers
-const database = require('./controllers/database')
+const db = require('./controllers/database')
 const logging = require('./controllers/logging')
 
 // load custom middlewares
@@ -28,14 +28,14 @@ const users = require('./routes/users')
 // instantiate express app
 logging.warning('Initialize Express.js Framework')
 let app = express()
-let port = normalizePort(config.hostingInformation.port || '3000')
+let port = normalizePort(appConfig.hosting.port || '3000')
 let server = null
 
 // load essential service components
 logging.warning('initialize essential system components - pre-startup')
 // set init sequence
 let preStartupInitSequence = [
-  database.initialize(true), // working database
+  db.initialize(true), // working database
   'initialize essential systems 1...', // dummy stub
   'initialize essential systems 2...', // dummy stub
 ]
@@ -44,7 +44,7 @@ Promise
   .each(
     preStartupInitSequence,
     initResults => {
-      logging.console(initResults)
+      logging.warning(initResults)
       return Promise.resolve()
     }
   )
@@ -96,13 +96,14 @@ Promise
   .then(() => {
     logging.warning('initialize other system components - post-startup')
     let postStartupInitSequence = [ // set init sequence
+      db.hydrateWorkingData(),
       'initialize other systems 1...', // dummy stub
       'initialize other systems 2...', // dummy stub
     ]
     return Promise.each(
       postStartupInitSequence,
       initResults => {
-        logging.console(initResults)
+        logging.warning(initResults)
         return Promise.resolve()
       }
     ).then(() => {

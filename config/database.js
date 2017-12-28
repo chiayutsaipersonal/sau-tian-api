@@ -3,7 +3,7 @@ const path = require('path')
 require('dotenv').config()
 const eVars = process.env
 const config = {
-  app: require('../config/app'),
+  app: require('./app'),
 }
 
 const logging = require('../controllers/logging')
@@ -67,12 +67,18 @@ const dropSchemaSequence = [
 module.exports = {
   workingDb: eVars.NODE_ENV === 'staging' ? mysql : sqlite,
   liveData: {
-    path: eVars.LIVE_DATABASE_FILE_PATH,
-    tables: [
-      { modelName: 'Clients', tableName: 'customer.DBF' },
-      { modelName: 'Products', tableName: 'item.DBF' },
-      { modelName: 'Invoices', tableName: 'sal.DBF' },
-      { modelName: 'Sales', tableName: 'saldet.DBF' },
+    location: eVars.LIVE_DATABASE_FILE_PATH,
+    tableLookup: {
+      Clients: 'customer.DBF',
+      Products: 'item.DBF',
+      Invoices: 'sal.DBF',
+      Sales: 'saldet.DBF',
+    },
+    loadSequence: [
+      'Clients',
+      'Products',
+      'Invoices',
+      'Sales',
     ],
     disConFactorFile: path.resolve('./data/disConFactor.json'),
   },
