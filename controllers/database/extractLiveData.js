@@ -160,6 +160,7 @@ function recordProductData (record, invoiceRecords) {
   if (!record['@deleted']) {
     invoiceRecords.push({
       id: record.ITEMNO,
+      sapId: record.SITEMNO.trim() === '' ? null : record.SITEMNO.toString(),
       name: record.ITEMNAME.trim() === '' ? null : record.ITEMNAME.toString(),
       stockQty: isNaN(record.STOCKQTY) ? null : parseInt(record.STOCKQTY),
       unit: record.STKUNIT.trim() === '' ? null : record.STKUNIT.toString(),

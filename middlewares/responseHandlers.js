@@ -1,5 +1,10 @@
+require('dotenv').config()
+
 const logging = require('../controllers/logging')
-const eVars = require('../config/eVars')
+
+const protocol = require('../config/app').hosting.protocol
+const domain = require('../config/app').hosting.domain
+const port = require('../config/app').hosting.port
 
 const cannedMessage = {
   200: '200 OK',
@@ -97,7 +102,7 @@ req.resJson = {
 function json (req, res, next) {
   if (!('resJson' in req)) return next()
   req.resJson.method = req.method.toLowerCase()
-  req.resJson.endpoint = `${eVars.HOST}${req.originalUrl}`
+  req.resJson.endpoint = `${protocol}://${domain}:${port}${req.baseUrl}`
   req.resJson.statusCode = res.statusCode
   if (!('message' in req.resJson)) {
     req.resJson.message = cannedMessage[res.statusCode.toString()]
@@ -152,12 +157,12 @@ function error (error, req, res, next) {
   res.status(res.statusCode >= 400 ? res.statusCode : 500)
   let resJson = {
     method: req.method.toLowerCase(),
-    endpoint: `${req.protocol}://${req.hostname}:${eVars.PORT}${req.originalUrl}`,
+    endpoint: `${protocol}://${domain}:${port}${req.baseUrl}`,
     message: 'customMessage' in error
       ? error.customMessage
       : cannedMessage[res.statusCode.toString()],
   }
-  if (eVars.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     resJson.error = {
       code: error.code,
       name: error.name,

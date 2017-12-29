@@ -1,8 +1,11 @@
+const ora = require('ora')
 const Promise = require('bluebird')
 
 const logging = require('../logging')
 
 module.exports = (db, liveData) => {
+  let spinner = ora('Building workingDatabase...')
+  spinner.start()
   let datasets = [
     liveData.clients,
     liveData.products,
@@ -32,33 +35,38 @@ module.exports = (db, liveData) => {
         // console.log(error.sql)
         return Promise.reject(error)
       })
-    // }).then(() => {
-    //   for debugging db.Sales model workingData building purpose -
-    //   in order to find out about what records are in violation of fk constraint
-    //   return Promise
-    //     .each(liveData.sales, (salesRecord, index) => {
-    //       if (
-    //         (salesRecord.productId === 'G-85034') ||
-    //         (salesRecord.productId === 'B890393') ||
-    //         (salesRecord.productId === 'B25290')
-    //       ) {
-    //         return Promise.resolve()
-    //       }
-    //       return db.Sales
-    //         .create(salesRecord)
-    //         .catch(error => {
-    //           console.dir(Object.keys(error))
-    //           console.log(error.errors)
-    //           console.log(error.fields)
-    //           // console.log(error.parent)
-    //           // console.log(error.original)
-    //           console.log(error.sql)
-    //           return Promise.reject(error)
-    //         })
-    //     })
+    /*
+  }).then(() => {
+    // for debugging db.Sales model workingData building purpose -
+    // in order to find out about what records are in violation of fk constraint
+    // shouldn't use this in production, too many records to write
+    // causing lengthy startup
+    return Promise
+      .each(liveData.sales, (salesRecord, index) => {
+        if (
+          (salesRecord.productId === 'G-85034') ||
+          (salesRecord.productId === 'B890393') ||
+          (salesRecord.productId === 'B25290')
+        ) {
+          return Promise.resolve()
+        }
+        return db.Sales
+          .create(salesRecord)
+          .catch(error => {
+            console.dir(Object.keys(error))
+            console.log(error.errors)
+            console.log(error.fields)
+            // console.log(error.parent)
+            // console.log(error.original)
+            console.log(error.sql)
+            return Promise.reject(error)
+          })
+      })
+      */
   }).then(() => {
     // in order to prevent user input error
-    // each record is checked before writing to conversionFactors table
+    // each record is checked before
+    // writing to conversionFactors table
     // excluded records are displayed on screen
     return Promise
       .each(liveData.conversionFactors, (record, index) => {
@@ -87,9 +95,12 @@ module.exports = (db, liveData) => {
       .then(() => Promise.resolve())
       .catch(error => Promise.reject(error))
   }).then(() => {
+    spinner.stop()
+    db.ready = true
     logging.console('Working dataset built')
     return Promise.resolve()
   }).catch(error => {
+    spinner.stop()
     logging.error(error, 'failure building working datasets')
     return Promise.reject(error)
   })

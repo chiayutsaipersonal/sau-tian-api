@@ -21,7 +21,7 @@ const db = {
   config,
   liveDataConfig,
   workingDataConfig,
-  status: {},
+  ready: false,
   initialize,
   extractLiveData,
   hydrateWorkingData,
@@ -47,11 +47,8 @@ function initialize (force = false) {
     .then(() => buildAssociations(db))
     .then(() => syncModels(db, true))
     .then(() => {
-      db.status.clients = false
-      db.status.products = false
-      db.status.invoices = false
-      db.status.sales = false
-      db.status.conversionFactor = false
+      db.ready = false
+      return Promise.resolve()
     })
     .then(() => {
       return Promise.resolve()

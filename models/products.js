@@ -4,6 +4,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       primaryKey: true,
     },
+    sapId: { // SITEMNO
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     name: { // ITEMNAME
       type: DataTypes.STRING,
       allowNull: true,
@@ -14,6 +18,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     unit: { // STKUNIT
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    length: {
+      type: DataTypes.DECIMAL(9, 2),
+      allowNull: true,
+    },
+    width: {
+      type: DataTypes.DECIMAL(9, 2),
+      allowNull: true,
+    },
+    asp: {
+      type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },
   }, {

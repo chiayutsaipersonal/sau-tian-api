@@ -1,6 +1,8 @@
 const formatLinkHeader = require('format-link-header')
 
-const eVars = require('../config/eVars')
+const protocol = require('../config/app').hosting.protocol
+const domain = require('../config/app').hosting.domain
+const port = require('../config/app').hosting.port
 
 module.exports = getRecordCountFn => {
   return async (req, res, next) => {
@@ -34,7 +36,7 @@ module.exports = getRecordCountFn => {
     let baseStructure = {
       page: null,
       per_page: null,
-      url: `${eVars.APP_ROUTE}/api${req.path}`,
+      url: `${protocol}://${domain}:${port}${req.baseUrl}`,
     }
 
     let linkHeader = {}

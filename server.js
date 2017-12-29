@@ -20,16 +20,21 @@ const logging = require('./controllers/logging')
 // load custom middlewares
 const renderErrorPage = require('./middlewares/renderErrorPage')
 const notFoundHandler = require('./middlewares/notFoundHandler')
+const rejectApiCallsBeforeReady = require('./middlewares/rejectApiCallsBeforeReady')
 
 // load route handlers
 const index = require('./routes/index')
-const users = require('./routes/users')
+const clients = require('./routes/clients')
+const products = require('./routes/products')
 
 // instantiate express app
 logging.warning('Initialize Express.js Framework')
 let app = express()
 let port = normalizePort(appConfig.hosting.port || '3000')
 let server = null
+
+// declare routers
+const apiRouter = express.Router()
 
 // load essential service components
 logging.warning('initialize essential system components - pre-startup')
@@ -56,18 +61,23 @@ Promise
   })
   .then(() => {
     logging.warning('Loading pre-routing global middlewares')
+    /* npm modules */
     app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
     if (app.get('env') === 'development') app.use(logger('dev'))
     app.use(bodyParser.json())
     app.use(bodyParser.urlencoded({ extended: false }))
     // app.use(cookieParser());
     app.use(express.static(path.join(__dirname, 'public')))
+    /* custom modules */
+    apiRouter.use(rejectApiCallsBeforeReady)
     return Promise.resolve()
   })
   .then(() => {
     logging.warning('Routing setup')
-    app.use('/', index)
-    app.use('/users', users)
+    app.use(`/${appConfig.reference}`, index)
+    app.use(`/${appConfig.reference}/api`, apiRouter)
+    apiRouter.use('/clients', clients)
+    apiRouter.use('/products', products)
     return Promise.resolve()
   })
   .then(() => {
