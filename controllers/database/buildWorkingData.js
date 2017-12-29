@@ -22,10 +22,13 @@ module.exports = (db, liveData) => {
     return correspondingModels[index]
       .bulkCreate(dataset)
       .then(() => {
+        spinner.stop()
         logging.console(`Working '${Object.keys(liveData)[index]}' datasets built successfully`)
+        spinner = ora('Building workingDatabase...').start()
         return Promise.resolve()
       })
       .catch(error => {
+        spinner.stop()
         logging.error(error, `Failure building working '${Object.keys(liveData)[index]}' datasets`)
         console.dir(Object.keys(error))
         console.log(error.errors)
@@ -78,6 +81,7 @@ module.exports = (db, liveData) => {
                 .create(record)
                 .catch(error => Promise.reject(error))
             } else {
+              spinner.stop()
               logging.warning(`id: '${record.productId}' does not exist in db.Products`)
               return Promise.resolve()
             }

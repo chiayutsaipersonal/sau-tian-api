@@ -26,6 +26,7 @@ const rejectApiCallsBeforeReady = require('./middlewares/rejectApiCallsBeforeRea
 const index = require('./routes/index')
 const clients = require('./routes/clients')
 const products = require('./routes/products')
+const invoices = require('./routes/invoices')
 
 // instantiate express app
 logging.warning('Initialize Express.js Framework')
@@ -78,6 +79,7 @@ Promise
     app.use(`/${appConfig.reference}/api`, apiRouter)
     apiRouter.use('/clients', clients)
     apiRouter.use('/products', products)
+    apiRouter.use('/invoices', invoices)
     return Promise.resolve()
   })
   .then(() => {

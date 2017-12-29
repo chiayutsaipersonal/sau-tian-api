@@ -9,7 +9,7 @@ const router = express.Router()
 /*
 GET product listing
 
-find invoices with sales entry with products that has conversion factor value, then find a distinct list of the clients ordered by client id that these invoices belongs to, then filter the clients whose area id is between 1 and 4
+find products that has conversion factor value
 */
 
 router.get('/',
