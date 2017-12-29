@@ -15,7 +15,7 @@ find products that has conversion factor value
 router.get('/',
   pagination(recordCount(db)),
   (req, res, next) => {
-    let queryString = 'SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products INNER JOIN conversionFactors ON products.id = conversionFactors.productId ORDER BY id'
+    const queryString = 'SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products INNER JOIN conversionFactors ON products.id = conversionFactors.productId ORDER BY id'
     let paginationString = req.linkHeader
       ? ` LIMIT ${req.queryOptions.limit} OFFSET ${req.queryOptions.offset};`
       : ';'
@@ -38,8 +38,9 @@ module.exports = router
 
 function recordCount (db) {
   return () => {
+    const queryString = 'SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products INNER JOIN conversionFactors ON products.id = conversionFactors.productId ORDER BY id;'
     return db.sequelize
-      .query('SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products INNER JOIN conversionFactors ON products.id = conversionFactors.productId ORDER BY id;')
+      .query(queryString)
       .spread((data, meta) => Promise.resolve(data.length))
       .catch(error => Promise.reject(error))
   }

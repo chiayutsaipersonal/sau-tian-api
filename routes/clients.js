@@ -15,7 +15,7 @@ find invoices with sales entry with products that has conversion factor value, t
 router.get('/',
   pagination(recordCount(db)),
   (req, res, next) => {
-    let queryString = 'SELECT DISTINCT clients.* FROM invoices INNER JOIN sales ON invoices.id = sales.invoiceId LEFT JOIN products ON products.id = sales.productId INNER JOIN conversionFactors ON conversionFactors.productId = products.id LEFT JOIN clients ON clients.id = invoices.clientId WHERE clients.areaId BETWEEN 1 AND 4 ORDER BY clients.id'
+    const queryString = 'SELECT DISTINCT clients.* FROM invoices INNER JOIN sales ON invoices.id = sales.invoiceId LEFT JOIN products ON products.id = sales.productId INNER JOIN conversionFactors ON conversionFactors.productId = products.id LEFT JOIN clients ON clients.id = invoices.clientId WHERE clients.areaId BETWEEN 1 AND 4 ORDER BY clients.id'
     let paginationString = req.linkHeader
       ? ` LIMIT ${req.queryOptions.limit} OFFSET ${req.queryOptions.offset};`
       : ';'
@@ -37,9 +37,10 @@ router.get('/',
 module.exports = router
 
 function recordCount (db) {
+  const queryString = 'SELECT DISTINCT clients.* FROM invoices INNER JOIN sales ON invoices.id = sales.invoiceId LEFT JOIN products ON products.id = sales.productId INNER JOIN conversionFactors ON conversionFactors.productId = products.id LEFT JOIN clients ON clients.id = invoices.clientId WHERE clients.areaId BETWEEN 1 AND 4 ORDER BY clients.id;'
   return () => {
     return db.sequelize
-      .query('SELECT DISTINCT clients.* FROM invoices INNER JOIN sales ON invoices.id = sales.invoiceId LEFT JOIN products ON products.id = sales.productId INNER JOIN conversionFactors ON conversionFactors.productId = products.id LEFT JOIN clients ON clients.id = invoices.clientId WHERE clients.areaId BETWEEN 1 AND 4 ORDER BY clients.id;')
+      .query(queryString)
       .spread((data, meta) => Promise.resolve(data.length))
       .catch(error => Promise.reject(error))
   }
