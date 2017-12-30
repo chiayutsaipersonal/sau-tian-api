@@ -1,4 +1,4 @@
 /node_modules
 
-data/sauTian.db
-.env
+/.env
+/data/sauTian.db
