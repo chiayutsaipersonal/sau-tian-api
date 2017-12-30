@@ -3,13 +3,13 @@ const db = require('../controllers/database')
 
 const router = express.Router()
 
-router.get('/',
-  (req, res, next) => {
+router
+  .get('/', (req, res, next) => {
     return db.sequelize
       .query(getQueryString(
         req.query.startDate || null,
         req.query.endDate || null,
-        req.query.productId || null
+        req.query.productId || null,
       ))
       .spread((data, meta) => {
         req.resJson = { data }
@@ -17,8 +17,22 @@ router.get('/',
         return Promise.resolve()
       })
       .catch(error => next(error))
-  }
-)
+  })
+  .get('/products/ids', (req, res, next) => {
+    return db.sequelize
+      .query(getPossibleIdsQueryString(
+        req.query.startDate || null,
+        req.query.endDate || null,
+      ))
+      .spread((data, meta) => Promise.resolve(data))
+      .map(data => data.productId)
+      .then(data => {
+        req.resJson = { data }
+        next()
+        return Promise.resolve()
+      })
+      .catch(error => next(error))
+  })
 
 module.exports = router
 
@@ -58,4 +72,17 @@ FROM sales
   INNER JOIN clients ON invoices.clientId = clients.id
 WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}'${productId ? ` AND sales.productId = '${productId}'` : ''}
 ORDER BY products.id, clients.id, invoices.date;`
+}
+
+function getPossibleIdsQueryString (startDate, endDate) {
+  return `
+SELECT DISTINCT
+  sales.productId
+FROM sales
+  INNER JOIN products ON sales.productId = products.id
+  INNER JOIN conversionFactors ON sales.productId = conversionFactors.productId
+  INNER JOIN invoices ON sales.invoiceId = invoices.id
+  INNER JOIN clients ON invoices.clientId = clients.id
+WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}'
+ORDER BY products.id;`
 }
