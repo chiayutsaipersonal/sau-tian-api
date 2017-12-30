@@ -36,7 +36,7 @@ module.exports = getRecordCountFn => {
     let baseStructure = {
       page: null,
       per_page: null,
-      url: `${protocol}://${domain}:${port}${req.baseUrl}`,
+      url: `${protocol}://${domain}:${port}${req.originalUrl}`,
     }
 
     let linkHeader = {}

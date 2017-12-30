@@ -102,7 +102,7 @@ req.resJson = {
 function json (req, res, next) {
   if (!('resJson' in req)) return next()
   req.resJson.method = req.method.toLowerCase()
-  req.resJson.endpoint = `${protocol}://${domain}:${port}${req.baseUrl}`
+  req.resJson.endpoint = `${protocol}://${domain}:${port}${req.originalUrl}`
   req.resJson.statusCode = res.statusCode
   if (!('message' in req.resJson)) {
     req.resJson.message = cannedMessage[res.statusCode.toString()]
@@ -153,11 +153,11 @@ function template (req, res, next) {
 
 // router specific global error handler
 function error (error, req, res, next) {
-  logging.warning('觸發 API 端點全域錯誤處理中介部件')
+  logging.warning('Global error handler invoked')
   res.status(res.statusCode >= 400 ? res.statusCode : 500)
   let resJson = {
     method: req.method.toLowerCase(),
-    endpoint: `${protocol}://${domain}:${port}${req.baseUrl}`,
+    endpoint: `${protocol}://${domain}:${port}${req.originalUrl}`,
     message: 'customMessage' in error
       ? error.customMessage
       : cannedMessage[res.statusCode.toString()],
@@ -176,8 +176,7 @@ function error (error, req, res, next) {
     }
   }
   delete error.customMessage
-  res
+  return res
     .type('application/json;charset=utf-8')
     .json(resJson)
-  return next(error)
 }

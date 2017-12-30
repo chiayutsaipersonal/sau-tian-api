@@ -2,7 +2,6 @@ const express = require('express')
 const db = require('../controllers/database')
 
 const pagination = require('../middlewares/pagination')
-const responseHandler = require('../middlewares/responseHandlers')
 
 const router = express.Router()
 
@@ -29,9 +28,7 @@ router.get('/',
       .catch(error => {
         return next(error)
       })
-  },
-  responseHandler.json,
-  responseHandler.error
+  }
 )
 
 module.exports = router

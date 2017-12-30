@@ -19,8 +19,10 @@ const logging = require('./controllers/logging')
 
 // load custom middlewares
 const renderErrorPage = require('./middlewares/renderErrorPage')
-const notFoundHandler = require('./middlewares/notFoundHandler')
+const missingApiEndpointHandler = require('./middlewares/missingApiEndpointHandler')
 const rejectApiCallsBeforeReady = require('./middlewares/rejectApiCallsBeforeReady')
+const apiResponseHandler = require('./middlewares/apiResponseHandlers')
+const pageNotFoundHandler = require('./middlewares/pageNotFountHandler')
 
 // load route handlers
 const index = require('./routes/index')
@@ -84,7 +86,10 @@ Promise
   })
   .then(() => {
     logging.warning('Loading post-routing global middlewares')
-    app.use(notFoundHandler) // 404 handler
+    apiRouter.use(apiResponseHandler.json)
+    apiRouter.use(missingApiEndpointHandler) // capture fall-through missing api endpoint request
+    apiRouter.use(apiResponseHandler.error)
+    app.use(pageNotFoundHandler) // capture fall-through missing page request
     app.use(renderErrorPage) // error handler
     return Promise.resolve()
   })

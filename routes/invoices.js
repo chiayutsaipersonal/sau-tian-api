@@ -1,8 +1,6 @@
 const express = require('express')
 const db = require('../controllers/database')
 
-const responseHandler = require('../middlewares/responseHandlers')
-
 const router = express.Router()
 
 router.get('/',
@@ -19,9 +17,7 @@ router.get('/',
         return Promise.resolve()
       })
       .catch(error => next(error))
-  },
-  responseHandler.json,
-  responseHandler.error
+  }
 )
 
 module.exports = router
