@@ -1,10 +1,9 @@
 const Sequelize = require('sequelize')
 
-const config = require('../../config/database')
 const liveDataConfig = require('../../config/liveData')
 const workingDataConfig = require('../../config/workingData')
 
-const sequelize = new Sequelize(config.workingDb)
+const sequelize = new Sequelize(workingDataConfig)
 
 const verifyDatasource = require('./verifyDatasource')
 const dropAllSchemas = require('./dropAllSchemas')
@@ -18,7 +17,6 @@ const buildWorkingData = require('./buildWorkingData')
 const db = {
   Sequelize,
   sequelize,
-  config,
   liveDataConfig,
   workingDataConfig,
   ready: false,
@@ -32,7 +30,7 @@ module.exports = db
 function hydrateWorkingData () {
   return extractLiveData(db)
     .then(liveData => buildWorkingData(db, liveData))
-    .then(() => Promise.resolve(`${config.workingDb.dialect} working database hydrated with live data...`))
+    .then(() => Promise.resolve(`${workingDataConfig.dialect} working database hydrated with live data...`))
     .catch(error => Promise.reject(error))
 }
 
@@ -53,6 +51,6 @@ function initialize (force = false) {
     .then(() => {
       return Promise.resolve()
     })
-    .then(() => Promise.resolve(`${config.workingDb.dialect} database structure initialized...`))
+    .then(() => Promise.resolve(`${workingDataConfig.dialect} database structure initialized...`))
     .catch(error => Promise.reject(error))
 }
