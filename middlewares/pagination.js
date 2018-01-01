@@ -1,9 +1,5 @@
 const formatLinkHeader = require('format-link-header')
 
-const protocol = require('../config/app').hosting.protocol
-const domain = require('../config/app').hosting.domain
-const port = require('../config/app').hosting.port
-
 module.exports = getRecordCountFn => {
   return async (req, res, next) => {
     let query = req.query
@@ -36,7 +32,7 @@ module.exports = getRecordCountFn => {
     let baseStructure = {
       page: null,
       per_page: null,
-      url: `${protocol}://${domain}:${port}${req.originalUrl}`,
+      url: req.originalUrl,
     }
 
     let linkHeader = {}
