@@ -3,12 +3,20 @@
 // load npm packages
 const bodyParser = require('body-parser')
 // const cookieParser = require('cookie-parser')
+const cors = require('cors')
+const dotEnv = require('dotenv')
 const express = require('express')
 const favicon = require('serve-favicon')
 const http = require('http')
 const logger = require('morgan')
 const path = require('path')
 const Promise = require('bluebird')
+const webpack = require('webpack')
+const webpackConfigSource = require(path.resolve('../sau-tian-client/build/webpack.dev.conf'))
+const webpackDevMiddleware = require('webpack-dev-middleware')
+const webpackHotMiddleware = require('webpack-hot-middleware')
+
+dotEnv.config()
 
 // load custom configurations
 const appConfig = require('./config/app')
@@ -30,11 +38,30 @@ const clients = require('./routes/clients')
 const products = require('./routes/products')
 const invoices = require('./routes/invoices')
 
-// instantiate express app
+// instantiate express app and create server instance
 logging.warning('Initialize Express.js Framework')
 let app = express()
-let port = normalizePort(appConfig.hosting.port || '3000')
+let port = normalizePort(appConfig.hosting.port || '9003')
+app.set('port', port)
 let server = null
+server = http.createServer(app) // Create HTTP server
+
+// setup webpack dev server middlewares for HMR in development mode
+if (process.env.NODE_ENV === 'development') {
+  let webpackCompiler = null
+  webpackConfigSource
+    .then(webpackConfig => {
+      webpackConfig.entry.app.push('webpack-hot-middleware/client?reload=true')
+      webpackCompiler = webpack(webpackConfig)
+      app.use(webpackDevMiddleware(webpackCompiler, {
+        logLevel: 'warn',
+        publicPath: webpackConfig.output.publicPath,
+        stats: { colors: true },
+      })
+      )
+      app.use(webpackHotMiddleware(webpackCompiler))
+    })
+}
 
 // declare routers
 const apiRouter = express.Router()
@@ -54,8 +81,7 @@ Promise
     initResults => {
       logging.warning(initResults)
       return Promise.resolve()
-    }
-  )
+    })
   .then(() => {
     logging.warning('Initialize Handlebars templating engine')
     app.set('views', path.join(__dirname, 'views'))
@@ -65,19 +91,23 @@ Promise
   .then(() => {
     logging.warning('Loading pre-routing global middlewares')
     /* npm modules */
-    app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
-    if (app.get('env') === 'development') app.use(logger('dev'))
+    if (app.get('env') === 'production') app.use(favicon(path.join(__dirname, 'dist', 'public', 'favicon.ico')))
+    if (app.get('env') === 'development') {
+      app.use(logger('dev'))
+      app.use(cors()) // enable CORS for all origins (no longer required once client is loaded from this server)
+    }
     app.use(bodyParser.json())
     app.use(bodyParser.urlencoded({ extended: false }))
     // app.use(cookieParser());
-    app.use(express.static(path.join(__dirname, 'public')))
+    /* serve static assets */
+    app.use(express.static(path.join(__dirname, 'dist', 'public')))
     /* custom modules */
     apiRouter.use(rejectApiCallsBeforeReady)
     return Promise.resolve()
   })
   .then(() => {
     logging.warning('Routing setup')
-    app.use(`/${appConfig.reference}`, index)
+    if (process.env.NODE_ENV !== 'development') app.use(`/${appConfig.reference}`, index)
     app.use(`/${appConfig.reference}/api`, apiRouter)
     apiRouter.use('/clients', clients)
     apiRouter.use('/products', products)
@@ -94,9 +124,7 @@ Promise
     return Promise.resolve()
   })
   .then(() => {
-    logging.warning('Create web server')
-    app.set('port', port)
-    server = http.createServer(app) // Create HTTP server
+    logging.warning('Start web server')
     server.listen(port) // Listen on provided port, on all network interfaces
     return Promise.resolve()
   })
