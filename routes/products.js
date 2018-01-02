@@ -7,8 +7,6 @@ const router = express.Router()
 
 /*
 GET product listing
-
-find products that has conversion factor value
 */
 
 router.get('/',
