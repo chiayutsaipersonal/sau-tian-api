@@ -9,7 +9,7 @@ const port = require('../config/app').hosting.port
 module.exports = (req, res, next) => {
   logging.warning(`Page requested is missing: ${protocol}://${domain}:${port}${req.originalUrl}`)
   return res
-    .status(404)
+    .status(301)
     .type('text/html;charset=utf-8')
     .sendFile(path.resolve('./dist/public/index.html'))
 }
