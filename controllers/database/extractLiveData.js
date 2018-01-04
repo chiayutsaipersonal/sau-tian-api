@@ -104,16 +104,20 @@ module.exports = db => {
             resolveJointPaths(fileName),
             data[references[index]]
           ).catch(error => {
+            spinner.stop()
             logging.error(error, `${fileName} file backup failure`)
             return Promise.reject(error)
           })
         }).then(() => {
+          spinner.stop()
           logging.console('.json file backup completed')
           return Promise.resolve()
         }).catch(error => {
+          spinner.stop()
           return Promise.reject(error)
         })
       } else {
+        spinner.stop()
         logging.console('Skip .json file backup')
         return Promise.resolve()
       }
