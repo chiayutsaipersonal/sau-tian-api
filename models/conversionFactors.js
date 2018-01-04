@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     productId: { // ITEMNO
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     conversionFactor: { // DIS_CON_FACTOR
       type: DataTypes.DECIMAL(11, 4),
