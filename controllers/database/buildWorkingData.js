@@ -1,11 +1,8 @@
-const ora = require('ora')
 const Promise = require('bluebird')
 
 const logging = require('../logging')
 
 module.exports = (db, liveData) => {
-  let spinner = ora('Building workingDatabase...')
-  spinner.start()
   let datasets = [
     liveData.clients,
     liveData.products,
@@ -22,13 +19,10 @@ module.exports = (db, liveData) => {
     return correspondingModels[index]
       .bulkCreate(dataset)
       .then(() => {
-        spinner.stop()
         logging.console(`Working '${Object.keys(liveData)[index]}' datasets built successfully`)
-        spinner = ora('Building workingDatabase...').start()
         return Promise.resolve()
       })
       .catch(error => {
-        spinner.stop()
         logging.error(error, `Failure building working '${Object.keys(liveData)[index]}' datasets`)
         console.dir(Object.keys(error))
         console.log(error.errors)
@@ -67,44 +61,37 @@ module.exports = (db, liveData) => {
       })
       */
   }).then(() => {
-    // in order to prevent user input error
-    // each record is checked before
-    // writing to conversionFactors table
-    // excluded records are displayed on screen
-    return Promise
-      .each(liveData.conversionFactors, (record, index) => {
-        return db.Products
-          .findById(record.productId)
-          .then(result => {
-            if (result) {
-              return db.ConversionFactors
-                .create(record)
-                .catch(error => Promise.reject(error))
-            } else {
-              spinner.stop()
-              logging.warning(`id: '${record.productId}' does not exist in db.Products`)
-              return Promise.resolve()
-            }
-          })
-          .catch(error => {
-            console.dir(Object.keys(error))
-            console.log(error.errors)
-            console.log(error.fields)
-            // console.log(error.parent)
-            // console.log(error.original)
-            console.log(error.sql)
-            return Promise.reject(error)
-          })
-      })
+    return Promise.each(liveData.conversionFactors, record => {
+      return db.Products.findById(record.productId)
+        .then(product => {
+          if (!product) {
+            logging.warning(`秀田 POS 系統產品資料中未發現產品編號: '${record.productId}'`)
+            return Promise.resolve()
+          } else {
+            return product.update({
+              conversionFactorId: record.conversionFactorId,
+              conversionFactor: record.conversionFactor,
+            }).catch(error => {
+              console.dir(Object.keys(error))
+              console.log(error.errors)
+              console.log(error.fields)
+              // console.log(error.parent)
+              // console.log(error.original)
+              console.log(error.sql)
+              return Promise.reject(error)
+            })
+          }
+        }).catch(error => {
+          return Promise.reject(error)
+        })
+    })
       .then(() => Promise.resolve())
       .catch(error => Promise.reject(error))
   }).then(() => {
-    spinner.stop()
     db.ready = true
     logging.console('Working dataset built')
     return Promise.resolve()
   }).catch(error => {
-    spinner.stop()
     logging.error(error, 'failure building working datasets')
     return Promise.reject(error)
   })

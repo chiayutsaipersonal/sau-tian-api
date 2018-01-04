@@ -70,8 +70,8 @@ module.exports = db => {
           if (Array.isArray(recordset)) {
             recordset.forEach(record => {
               data.conversionFactors.push({
-                id: record.id,
                 productId: record.productId,
+                conversionFactorId: record.conversionFactorId,
                 conversionFactor: parseFloat(record.conversionFactor),
               })
             })

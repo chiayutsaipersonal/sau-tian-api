@@ -4,8 +4,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    sapId: { // SITEMNO
+    sapId: { // 秀田 POS SITEMNO
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    conversionFactorId: { // 3M SAP id
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
+    conversionFactor: { // DIS_CON_FACTOR
+      type: DataTypes.DECIMAL(11, 4),
       allowNull: true,
     },
     name: { // ITEMNAME

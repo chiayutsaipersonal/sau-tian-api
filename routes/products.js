@@ -1,4 +1,6 @@
 const express = require('express')
+const { check } = require('express-validator/check')
+const { sanitize } = require('express-validator/filter')
 const fs = require('fs-extra')
 const multer = require('multer')
 
@@ -10,15 +12,13 @@ const pagination = require('../middlewares/pagination')
 const router = express.Router()
 
 router
-  // search for conversionFactors record matching productId or conversionFactorId
+  // search for other products that carries the specified conversion factor id
   .get('/:productId/conversionFactors/:conversionFactorId',
     (req, res, next) => {
-      return db.ConversionFactors.findAll({
+      return db.Products.findAll({
         where: {
-          [db.Sequelize.Op.or]: [
-            { id: req.params.conversionFactorId },
-            { productId: req.params.productId },
-          ],
+          id: { [db.Sequelize.Op.ne]: req.params.productId },
+          conversionFactorId: req.params.conversionFactorId,
         },
       }).then(data => {
         req.resJson = { data }
@@ -33,13 +33,17 @@ router
   .get('/',
     pagination(recordCount(db)),
     (req, res, next) => {
-      const queryString = 'SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products LEFT JOIN conversionFactors ON products.id = conversionFactors.productId ORDER BY conversionFactorId IS NULL, id'
-      let paginationString = req.linkHeader
-        ? ` LIMIT ${req.queryOptions.limit} OFFSET ${req.queryOptions.offset};`
-        : ';'
-      return db.sequelize
-        .query(queryString + paginationString)
-        .spread((data, meta) => {
+    // const queryString = 'SELECT products.* FROM products ORDER BY id;'
+      let queryOptions = {
+        order: ['id'],
+      }
+      if (req.linkHeader) {
+        queryOptions.limit = req.queryOptions.limit
+        queryOptions.offset = req.queryOptions.offset
+      }
+      return db.Products
+        .findAll(queryOptions)
+        .then(data => {
           req.resJson = { data }
           next()
           return Promise.resolve()
@@ -49,57 +53,125 @@ router
         })
     }
   )
+  // clear converstion factor data from a specified product
+  .delete('/:productId', (req, res, next) => {
+    return db.Products
+      .findById(req.params.productId)
+      .then(product => {
+        if (!product) {
+          res.status(404)
+          let error = new Error(`Product id: '${req.params.productId} is missing'`)
+          return Promise.reject(error)
+        } else {
+          return product.update({
+            conversionFactorId: null,
+            conversionFactor: null,
+          }).catch(error => Promise.reject(error))
+        }
+      }).then(() => {
+        return db.Products
+          .findAll({
+            where: {
+              conversionFactorId: {
+                [db.Sequelize.Op.ne]: null,
+              },
+            },
+          })
+          .then(data => Promise.resolve(data.map(entry => {
+            return {
+              productId: entry.id,
+              conversionFactorId: entry.conversionFactorId,
+              conversionFactor: entry.conversionFactor,
+            }
+          })))
+          .catch(error => {
+            logging.error(error, 'Conversion factor data reading failure')
+            return Promise.reject(error)
+          })
+      }).then(records => {
+        return fs
+          .outputJson('./data/disConFactor.json', records)
+          .catch(error => {
+            logging.error(error, 'product conversion factor data writeout failure')
+            return Promise.reject(error)
+          })
+      }).then(() => {
+        req.resJson = { message: 'Conversion factor cleared...' }
+        next()
+        return Promise.resolve()
+      }).catch(error => next(error))
+  })
   // update product record
   .post('/',
     multer().none(),
+    [
+      check('productId').isEmpty(),
+      check('conversionFactorId').isEmpty(),
+      check('conversionFactor').isEmpty().isFloat(),
+      sanitize('conversionFactor').toFloat(),
+    ],
     (req, res, next) => {
-      let deleteQuery = `DELETE FROM conversionFactors WHERE id = '${req.body.conversionFactorId}' OR productId = '${req.body.productId}';`
-      return db.sequelize
-        .transaction(transaction => {
-          return db.sequelize
-            .query(deleteQuery, {
+      return db.sequelize.transaction(transaction => {
+        return db.Products
+          .update({
+            conversionFactor: null,
+            conversionFactorId: null,
+          }, {
+            where: {
+              [db.Sequelize.Op.or]: [
+                { id: req.body.productId },
+                { conversionFactorId: req.body.conversionFactorId },
+              ],
+            },
+            transaction,
+          }).then(() => {
+            return db.Products.update({
+              conversionFactorId: req.body.conversionFactorId,
+              conversionFactor: req.body.conversionFactor,
+            }, {
+              where: { id: req.body.productId },
               transaction,
-              logging: logging.warning,
             })
-            .then(() => {
-              return Promise.resolve()
-            })
-            .catch(error => {
-              logging.error(error, 'Delete query failure')
-              return Promise.reject(error)
-            })
-        }).then(() => {
-          return db.ConversionFactors
-            .findAll()
-            .catch(error => {
-              logging.error(error, 'Conversion factor data reading failure')
-              return Promise.reject(error)
-            })
-        }).then(records => {
-          return fs
-            .outputJson('./data/disConFactor.json', records)
-            .catch(error => {
-              logging.error(error, 'product conversion factor data writeout failure')
-              return Promise.reject(error)
-            })
-        }).then(() => {
-          req.resJson = { message: '轉換率資料更新成功' }
-          next()
-          return Promise.resolve()
-        }).catch(error => {
-          return next(error)
-        })
-    // return db.ConversionFactors
-    //   .delete({ id: req.body.conversionFactorId })
-    //   .then(() => {
-    //     return db.ConversionFactors.delete({ productId: req.body.productId })
-    //   }).then(() => {
-    //     return db.ConversionFactors.upsert({
-    //       id: req.body.conversionFactorId || null,
-    //       productId: req.body.productId || null,
-    //       conversionFactor: req.body.conversionFactor || null,
-    //     })
-    //   })
+          }).then(() => {
+            return Promise.resolve()
+          }).catch(error => {
+            logging.error(error)
+            return Promise.reject(error)
+          })
+      }).then(() => {
+        return db.Products
+          .findAll({
+            where: {
+              conversionFactorId: {
+                [db.Sequelize.Op.ne]: null,
+              },
+            },
+          })
+          .then(data => Promise.resolve(data.map(entry => {
+            return {
+              productId: entry.id,
+              conversionFactorId: entry.conversionFactorId,
+              conversionFactor: entry.conversionFactor,
+            }
+          })))
+          .catch(error => {
+            logging.error(error, 'Conversion factor data reading failure')
+            return Promise.reject(error)
+          })
+      }).then(records => {
+        return fs
+          .outputJson('./data/disConFactor.json', records)
+          .catch(error => {
+            logging.error(error, 'product conversion factor data writeout failure')
+            return Promise.reject(error)
+          })
+      }).then(() => {
+        req.resJson = { message: '轉換率資料更新成功' }
+        next()
+        return Promise.resolve()
+      }).catch(error => {
+        return next(error)
+      })
     }
   )
 
@@ -107,7 +179,7 @@ module.exports = router
 
 function recordCount (db) {
   return () => {
-    const queryString = 'SELECT products.*, conversionFactors.id AS \'conversionFactorId\', conversionFactors.conversionFactor FROM products LEFT JOIN conversionFactors ON products.id = conversionFactors.productId;'
+    const queryString = 'SELECT products.* FROM products;'
     return db.sequelize
       .query(queryString)
       .spread((data, meta) => Promise.resolve(data.length))

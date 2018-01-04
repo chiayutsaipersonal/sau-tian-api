@@ -154,6 +154,7 @@ function template (req, res, next) {
 // router specific global error handler
 function error (error, req, res, next) {
   logging.warning('Global error handler invoked')
+  logging.error(error)
   res.status(res.statusCode >= 400 ? res.statusCode : 500)
   let resJson = {
     method: req.method.toLowerCase(),

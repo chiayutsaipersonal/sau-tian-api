@@ -3,9 +3,6 @@ const logging = require('../logging')
 module.exports = db => {
   logging.console('Assign ORM table relationships')
 
-  db.ConversionFactors.belongsTo(db.Products, injectOptions('productId', 'id'))
-  db.Products.hasOne(db.ConversionFactors, injectOptions('productId', 'id'))
-
   // following two lines does not work due to the reason stated in the following comment
   // db.Products.belongsToMany(db.Invoices, injectOptions('productId', 'id', db.Sales))
   // db.Invoices.belongsToMany(db.Products, injectOptions('invoiceId', 'id', db.Sales))
