@@ -115,14 +115,15 @@ function liveDataQuery (startDate, endDate) {
   return `
 SELECT
   invoices.date
-  ,clients.name AS 'client'
+  ,products.name AS 'productName'
+  ,sales.price
+  ,sales.quantity
+  ,invoices.employeeId
+  ,products.unit
+  ,clients.name AS 'companyName'
   ,clients.contact
   ,clients.areaId
   ,products.conversionFactor
-  ,products.name AS 'product'
-  ,sales.price
-  ,sales.quantity
-  ,products.unit
   ,invoices.id AS 'invoiceId'
   ,clients.id AS 'clientId'
   ,sales.id AS 'salesId'
