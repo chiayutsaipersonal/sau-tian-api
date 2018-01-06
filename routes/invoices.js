@@ -11,7 +11,7 @@ router
     (req, res, next) => {
       return db.sequelize
         .query(liveDataQuery(req.query.startDate, req.query.endDate))
-        .then(data => {
+        .spread((data, meta) => {
           req.resJson = { data }
           next()
           return Promise.resolve()
