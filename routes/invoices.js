@@ -121,7 +121,7 @@ SELECT
   ,invoices.employeeId
   ,products.unit
   ,clients.name AS 'companyName'
-  ,clients.contact
+  -- ,clients.contact
   ,clients.areaId
   ,products.conversionFactor
   ,invoices.id AS 'invoiceId'
