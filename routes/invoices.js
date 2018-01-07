@@ -129,6 +129,7 @@ SELECT
   ,sales.id AS 'salesId'
   ,products.id AS 'productId'
   ,products.conversionFactorId
+  ,products.sapId
 FROM
   invoices
       INNER JOIN
