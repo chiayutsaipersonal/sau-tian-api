@@ -53,7 +53,7 @@ router
         })
     }
   )
-  // clear converstion factor data from a specified product
+  // clear conversion factor data from a specified product
   .delete('/:productId', (req, res, next) => {
     return db.Products
       .findById(req.params.productId)
