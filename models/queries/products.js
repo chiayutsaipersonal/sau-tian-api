@@ -119,7 +119,7 @@ function getProducts (limit = null, offset = null) {
     })
 }
 
-// query for current record count
+// query for record count
 function recordCount () {
   return db.sequelize
     .query('SELECT id FROM products;')
