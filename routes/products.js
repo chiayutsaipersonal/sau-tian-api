@@ -7,6 +7,8 @@ const multer = require('multer')
 const db = require('../controllers/database')
 const logging = require('../controllers/logging')
 
+const productQueries = require('../models/queries/products')
+
 const pagination = require('../middlewares/pagination')
 
 const router = express.Router()
@@ -31,9 +33,8 @@ router
   )
   // GET product listing
   .get('/',
-    pagination(recordCount(db)),
+    pagination(productQueries.tableRecordCount),
     (req, res, next) => {
-    // const queryString = 'SELECT products.* FROM products ORDER BY id;'
       let queryOptions = {
         order: ['id'],
       }
@@ -176,13 +177,3 @@ router
   )
 
 module.exports = router
-
-function recordCount (db) {
-  return () => {
-    const queryString = 'SELECT products.* FROM products;'
-    return db.sequelize
-      .query(queryString)
-      .spread((data, meta) => Promise.resolve(data.length))
-      .catch(error => Promise.reject(error))
-  }
-}

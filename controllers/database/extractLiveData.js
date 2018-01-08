@@ -21,6 +21,7 @@ module.exports = db => {
     invoices: [],
     sales: [],
     conversionFactors: [],
+    customSalesData: [],
   }
 
   let parsers = {
@@ -84,6 +85,22 @@ module.exports = db => {
         })
     })
     .then(() => {
+      return fs
+        .readJSON(db.liveDataConfig.customDataLocation)
+        .then(recordset => {
+          if (Array.isArray(recordset)) {
+            recordset.forEach(record => {
+              data.customSalesData.push(record)
+            })
+          }
+          return Promise.resolve()
+        }).catch(error => {
+          spinner.stop()
+          logging.error(error, 'customSalesData.json data extraction failure')
+          return Promise.reject(error)
+        })
+    })
+    .then(() => {
       if (db.liveDataConfig.backup) {
         let fileNames = [
           'clients.json',
@@ -91,6 +108,7 @@ module.exports = db => {
           'invoices.json',
           'sales.json',
           'conversionFactors.json',
+          'customSalesData.json',
         ]
         let references = [
           'clients',
@@ -98,6 +116,7 @@ module.exports = db => {
           'invoices',
           'sales',
           'conversionFactors',
+          'customSalesData',
         ]
         return Promise.each(fileNames, (fileName, index) => {
           return fs.outputJson(
