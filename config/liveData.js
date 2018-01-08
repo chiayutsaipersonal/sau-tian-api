@@ -7,7 +7,7 @@ const eVars = process.env
 const backup = false
 
 module.exports = {
-  location: path.resolve(eVars.LIVE_DATABASE_FILE_PATH),
+  location: path.resolve(eVars.LIVE_DATA_LOCATION),
   tableLookup: {
     Clients: 'customer.DBF',
     Products: 'item.DBF',
