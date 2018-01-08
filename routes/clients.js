@@ -1,41 +1,27 @@
 const express = require('express')
 
-const db = require('../controllers/database')
+const clientQueries = require('../models/queries/clients')
 
 const pagination = require('../middlewares/pagination')
 
 const router = express.Router()
 
 router
-  // GET client listing
+  // GET client listing (optional pagination)
   .get('/',
-    pagination(recordCount(db)),
+    pagination(clientQueries.recordCount),
     (req, res, next) => {
-      const queryString = 'SELECT * FROM clients WHERE areaId BETWEEN 1 AND 4 ORDER BY id'
-      let paginationString = req.linkHeader
-        ? ` LIMIT ${req.queryOptions.limit} OFFSET ${req.queryOptions.offset};`
-        : ';'
-      return db.sequelize
-        .query(queryString + paginationString)
-        .spread((data, meta) => {
+      let query = req.linkHeader
+        ? clientQueries.getClients(req.queryOptions.limit, req.queryOptions.offset)
+        : clientQueries.getClients()
+      return query
+        .then(data => {
           req.resJson = { data }
           next()
           return Promise.resolve()
         })
-        .catch(error => {
-          return next(error)
-        })
+        .catch(error => next(error))
     }
   )
 
 module.exports = router
-
-function recordCount (db) {
-  const queryString = 'SELECT * FROM clients WHERE areaId BETWEEN 1 AND 4;'
-  return () => {
-    return db.sequelize
-      .query(queryString)
-      .spread((data, meta) => Promise.resolve(data.length))
-      .catch(error => Promise.reject(error))
-  }
-}
