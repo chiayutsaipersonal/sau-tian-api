@@ -16,6 +16,7 @@ module.exports = {
   },
   loadSequence: ['Clients', 'Products', 'Invoices', 'Sales'],
   convFactorLocation: path.resolve('./data/disConFactor.json'),
+  customDataLocation: path.resolve('./data/customSalesData.json'),
   backup,
 }
 

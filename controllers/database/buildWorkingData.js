@@ -8,12 +8,14 @@ module.exports = (db, liveData) => {
     liveData.products,
     liveData.invoices,
     liveData.sales,
+    liveData.customSalesData,
   ]
   let correspondingModels = [
     db.Clients,
     db.Products,
     db.Invoices,
     db.Sales,
+    db.CustomSalesData,
   ]
   return Promise.each(datasets, (dataset, index) => {
     return correspondingModels[index]
@@ -81,12 +83,8 @@ module.exports = (db, liveData) => {
               return Promise.reject(error)
             })
           }
-        }).catch(error => {
-          return Promise.reject(error)
-        })
-    })
-      .then(() => Promise.resolve())
-      .catch(error => Promise.reject(error))
+        }).catch(error => Promise.reject(error))
+    }).catch(error => Promise.reject(error))
   }).then(() => {
     db.ready = true
     logging.console('Working dataset built')

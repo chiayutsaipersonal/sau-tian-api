@@ -8,6 +8,7 @@ const appConfig = require('./app')
 const logging = require('../controllers/logging')
 
 const dropSchemaSequence = [
+  'CustomSalesData',
   'Sales',
   'Invoices',
   'ConversionFactors',
@@ -15,7 +16,7 @@ const dropSchemaSequence = [
   'Clients',
 ]
 
-const modelLocation = path.resolve('./models')
+const modelLocation = path.resolve('./models/definitions')
 
 // settings
 const ormVerbose = false
@@ -73,7 +74,7 @@ const mysql = {
 module.exports = Object.assign(
   {
     models: {
-      location: path.resolve('./models'),
+      location: modelLocation,
       files: [],
       references: [],
     },

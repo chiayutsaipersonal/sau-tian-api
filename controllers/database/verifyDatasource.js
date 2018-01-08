@@ -24,6 +24,7 @@ function getTableFilePaths (args) {
     tableFilePaths.push(path.resolve(path.join(args.location, fileName)))
   })
   tableFilePaths.push(path.resolve(args.convFactorLocation))
+  tableFilePaths.push(path.resolve(args.customDataLocation))
   return Promise.resolve(tableFilePaths)
 }
 
