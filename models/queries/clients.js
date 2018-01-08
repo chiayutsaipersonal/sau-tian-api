@@ -17,7 +17,7 @@ function getClients (limit = null, offset = null) {
     },
     order: ['id'],
   }
-  if (limit && offset) {
+  if ((limit !== null) && (offset !== null)) {
     options.limit = limit
     options.offset = offset
   }
@@ -33,7 +33,7 @@ function getClients (limit = null, offset = null) {
 // query for record count
 function recordCount () {
   return db.sequelize
-    .query('SELECT * FROM clients WHERE areaId BETWEEN 1 AND 4;')
+    .query('SELECT id FROM clients WHERE areaId BETWEEN 1 AND 4;')
     .spread((data, meta) => Promise.resolve(data.length))
     .catch(error => {
       logging.error(error, 'modules/queries/clients.recordCount() errored')

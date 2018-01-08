@@ -80,6 +80,7 @@ router
           next()
           return Promise.resolve()
         }).catch(error => {
+          if (error.status) res.status(error.status)
           return next(error)
         })
     }

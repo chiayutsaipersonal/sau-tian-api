@@ -17,7 +17,20 @@ module.exports = {
 }
 
 // add conversion factor info to a product record
-function addConvFactorInfo ({ productId, conversionFactorId, conversionFactor }) {
+function addConvFactorInfo (
+  productId = null,
+  conversionFactorId = null,
+  conversionFactor = null
+) {
+  if (
+    (productId === null) ||
+    (conversionFactorId === null) ||
+    (conversionFactor === null)
+  ) {
+    let error = new Error('Required params missing')
+    error.status = 400
+    return Promise.reject(error)
+  }
   let clearQuery = `UPDATE products SET conversionFactorId = NULL, conversionFactor = NULL WHERE id = '${productId}' OR conversionFactorId = '${conversionFactorId}';`
   let updateQuery = `UPDATE products SET conversionFactorId = '${conversionFactorId}', conversionFactor = '${conversionFactor}' WHERE id = '${productId}'`
   return db.sequelize.transaction(transaction => {
@@ -106,7 +119,7 @@ function getProduct (productId) {
 // server-side pagination if specified
 function getProducts (limit = null, offset = null) {
   let options = { order: ['id'] }
-  if (limit && offset) {
+  if ((limit !== null) && (offset !== null)) {
     options.limit = limit
     options.offset = offset
   }
