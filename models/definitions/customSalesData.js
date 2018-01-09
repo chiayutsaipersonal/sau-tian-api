@@ -8,10 +8,6 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: () => uuidV4().toUpperCase(),
       validate: { isUUID: 4 },
     },
-    date: { // DATE2
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-    },
     invoiceId: { // SNO
       type: DataTypes.STRING,
       allowNull: false,
@@ -56,30 +52,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    // deletedAt: {
-    //   allowNull: true,
-    //   type: DataTypes.DATE,
-    // },
   }, {
     name: {
       singular: 'customSalesData',
       plural: 'customSalesData',
     },
-    timestamps: true,
-    paranoid: false,
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    // deletedAt: 'deletedAt',
   })
   return CustomSalesData
 }
