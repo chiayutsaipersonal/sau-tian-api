@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },
-    price: { // PRICE
+    unitPrice: { // PRICE
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },

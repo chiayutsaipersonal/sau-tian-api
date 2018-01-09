@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    price: { // PRICE
+    unitPrice: { // PRICE
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },
@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    _price: {
+    _unitPrice: {
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },

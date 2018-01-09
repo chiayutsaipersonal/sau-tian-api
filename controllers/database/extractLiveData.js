@@ -218,7 +218,7 @@ function recordSalesData (record, salesRecords) {
       invoiceId: record.SNO,
       productId: record.ITEMNO,
       quantity: isNaN(record.QTY) ? null : parseInt(record.QTY),
-      price: isNaN(record.PRICE) ? null : parseInt(record.PRICE),
+      unitPrice: isNaN(record.PRICE) ? null : parseInt(record.PRICE),
     })
   }
 }
