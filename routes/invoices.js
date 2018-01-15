@@ -1,7 +1,5 @@
 const express = require('express')
 
-const db = require('../controllers/database')
-
 const invoiceQueries = require('../models/queries/invoices')
 
 const router = express.Router()
@@ -17,20 +15,13 @@ router
       let dateRange = [req.query.startDate, req.query.endDate]
       return invoiceQueries
         .getLiveData(...dateRange)
-        .then(liveData => {
-          req.resJson = { data: liveData }
-          return Promise.resolve(liveData)
+        .then(data => {
+          req.resJson = { data }
+          return Promise.resolve(data)
         })
-        .then(liveData => invoiceQueries.extractCustomDataFromLiveData(liveData))
-        .then(validCustomData => {
-          return invoiceQueries
-            .getIrreleventCustomData(...dateRange)
-            .then(irreleventCustomData => {
-              let customSalesData = validCustomData.concat(irreleventCustomData)
-              return Promise.resolve(customSalesData)
-            })
-        })
-        .then(customSalesData => invoiceQueries.backupCustomInvoiceData(customSalesData))
+        .then(data => invoiceQueries.extractWorkingData(data))
+        .then(data => invoiceQueries.alignCustomSalesData(...dateRange, data))
+        .then(() => invoiceQueries.backupCustomSalesData())
         .then(() => {
           next()
           return Promise.resolve()
@@ -44,19 +35,15 @@ router
   .post('/',
     (req, res, next) => {
       return invoiceQueries
-        .prepCustomRecord(req.body)
-        .then(customRecord => {
+        .extractReqBodyData(req.body)
+        .then(data => {
           return invoiceQueries
-            .recordCustomData(customRecord)
-            .then(() => invoiceQueries.getCustomSalesData())
-            .then(customSalesData => invoiceQueries.backupCustomInvoiceData(customSalesData))
-            .then(() => invoiceQueries.getCustomSalesRecord(customRecord.id))
+            .recordUpsert(data)
+            .then(() => invoiceQueries.backupCustomInvoiceData())
+            .then(() => invoiceQueries.getCustomSalesRecord(data.id))
         })
         .then(data => {
-          req.resJson = {
-            data,
-            message: 'Custom sales data recorded',
-          }
+          req.resJson = { data }
           next()
           return Promise.resolve()
         })

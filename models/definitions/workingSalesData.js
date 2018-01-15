@@ -1,7 +1,7 @@
 const uuidV4 = require('uuid/v4')
 
 module.exports = (sequelize, DataTypes) => {
-  const CustomSalesData = sequelize.define('customSalesData', {
+  const WorkingSalesData = sequelize.define('workingSalesData', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -53,5 +53,5 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
   })
-  return CustomSalesData
+  return WorkingSalesData
 }

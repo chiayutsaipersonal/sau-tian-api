@@ -10,16 +10,15 @@ router
   // find a list of products that carries the same convFactorId
   .get('/:productId/conversionFactors/:conversionFactorId',
     (req, res, next) => {
-      let a = req.params.productId
-      let b = req.params.conversionFactorId
       return productQueries
-        .findDuplicates(a, b)
-        .then(data => {
+        .findDuplicates(
+          req.params.productId,
+          req.params.conversionFactorId,
+        ).then(data => {
           req.resJson = { data }
           next()
           return Promise.resolve()
-        })
-        .catch(error => next(error))
+        }).catch(error => next(error))
     }
   )
   // get product listing (optional pagination)
@@ -29,30 +28,20 @@ router
       let query = req.linkHeader
         ? productQueries.getProducts(req.queryOptions.limit, req.queryOptions.offset)
         : productQueries.getProducts()
-      return query
-        .then(data => {
-          req.resJson = { data }
-          next()
-          return Promise.resolve()
-        })
-        .catch(error => next(error))
+      return query.then(data => {
+        req.resJson = { data }
+        next()
+        return Promise.resolve()
+      }).catch(error => next(error))
     }
   )
   // clear conversion factor data from a specified product
-  // backup all convFactor data into a .json file
   .delete('/:productId',
     (req, res, next) => {
       return productQueries
-        .getProduct(req.params.productId)
-        .catch(error => {
-          if (error.status) res.status(error.status)
-          return Promise.reject(error)
-        }).then(productInstance => {
-          return productQueries.removeConvFactorInfo(productInstance)
-        }).then(() => {
-          return productQueries.extractConvFactorData()
-        }).then(convFactorData => {
-          return productQueries.backupConvFactorData(convFactorData)
+        .removeConvFactorInfo(req.params.productId)
+        .then(() => {
+          return productQueries.backupConvFactorData()
         }).then(() => {
           req.resJson = { message: 'Conversion factor cleared...' }
           next()
@@ -60,21 +49,15 @@ router
         }).catch(error => next(error))
     })
   // update conversion factor data
-  // backup all convFactor data into a .json file
   .post('/',
     (req, res, next) => {
-      let productId = req.body.productId
-      let conversionFactorId = req.body.conversionFactorId
-      let conversionFactor = req.body.conversionFactor
       return productQueries
         .addConvFactorInfo(
-          productId,
-          conversionFactorId,
-          conversionFactor
+          req.body.productId,
+          req.body.conversionFactorId,
+          req.body.conversionFactor
         ).then(() => {
-          return productQueries.extractConvFactorData()
-        }).then(convFactorData => {
-          return productQueries.backupConvFactorData(convFactorData)
+          return productQueries.backupConvFactorData()
         }).then(() => {
           req.resJson = { message: 'Conversion factor information updated' }
           next()

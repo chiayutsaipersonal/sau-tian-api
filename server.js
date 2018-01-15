@@ -70,7 +70,7 @@ const apiRouter = express.Router()
 logging.warning('initialize essential system components - pre-startup')
 // set init sequence
 let preStartupInitSequence = [
-  db.initialize(true), // working database
+  db.initialize(), // working database
   'initialize essential systems 1...', // dummy stub
   'initialize essential systems 2...', // dummy stub
 ]
@@ -153,8 +153,10 @@ Promise
       }
     ).then(() => {
       return Promise.resolve()
+    }).catch(error => {
+      logging.error(error, 'Post-startup initialization failure')
+      return Promise.reject(error)
     })
-      .catch(error => Promise.reject(error))
   })
   .then(() => {
     logging.warning('System initialization completed')

@@ -1,49 +1,43 @@
 const Sequelize = require('sequelize')
 
-const liveDataConfig = require('../../config/liveData')
-const workingDataConfig = require('../../config/workingData')
+const dbConfig = require('../../config/database')
 
-const sequelize = new Sequelize(workingDataConfig)
+const sequelize = new Sequelize(dbConfig)
+
+const db = {
+  Sequelize,
+  sequelize,
+  ready: false,
+  initialize,
+  hydrateWorkingData,
+}
+
+module.exports = db
 
 const verifyDatasource = require('./verifyDatasource')
-const dropAllSchemas = require('./dropAllSchemas')
-const generateModelList = require('./generateModelList')
+const dropSchemas = require('./dropSchemas')
 const registerModels = require('./registerModels')
 const syncModels = require('./syncModels')
 const buildAssociations = require('./buildAssociations')
 const extractLiveData = require('./extractLiveData')
 const buildWorkingData = require('./buildWorkingData')
 
-const db = {
-  Sequelize,
-  sequelize,
-  liveDataConfig,
-  workingDataConfig,
-  ready: false,
-  initialize,
-  extractLiveData,
-  hydrateWorkingData,
-}
-
-module.exports = db
-
 function hydrateWorkingData () {
-  return extractLiveData(db)
+  return extractLiveData()
     .then(liveData => buildWorkingData(db, liveData))
-    .then(() => Promise.resolve(`${workingDataConfig.dialect} working database hydrated with live data...`))
+    .then(() => Promise.resolve(`${dbConfig.dialect} working database hydrated with live data...`))
     .catch(error => Promise.reject(error))
 }
 
-function initialize (force = false) {
+function initialize () {
   return sequelize
     .authenticate()
-    .then(() => verifyDatasource(db))
-    .then(() => dropAllSchemas(db, force))
-    .then(() => generateModelList(db))
+    .then(() => verifyDatasource())
+    .then(() => dropSchemas())
     .then(() => registerModels(db))
-    .then(() => syncModels(db, true))
+    .then(() => syncModels())
     .then(() => buildAssociations(db))
-    .then(() => syncModels(db, true))
+    .then(() => syncModels())
     .then(() => {
       db.ready = false
       return Promise.resolve()
@@ -51,6 +45,6 @@ function initialize (force = false) {
     .then(() => {
       return Promise.resolve()
     })
-    .then(() => Promise.resolve(`${workingDataConfig.dialect} database structure initialized...`))
+    .then(() => Promise.resolve(`${dbConfig.dialect} database structure initialized...`))
     .catch(error => Promise.reject(error))
 }

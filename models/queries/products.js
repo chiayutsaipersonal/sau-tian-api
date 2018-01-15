@@ -8,7 +8,6 @@ const notEqualTo = db.Sequelize.Op.ne
 module.exports = {
   addConvFactorInfo,
   backupConvFactorData,
-  extractConvFactorData,
   findDuplicates,
   getProduct,
   getProducts,
@@ -17,88 +16,56 @@ module.exports = {
 }
 
 // add conversion factor info to a product record
-function addConvFactorInfo (
-  productId = null,
-  conversionFactorId = null,
-  conversionFactor = null
-) {
+function addConvFactorInfo (productId = null, conversionFactorId = null, conversionFactor = null) {
   if (
     (productId === null) ||
     (conversionFactorId === null) ||
     (conversionFactor === null)
   ) {
-    let error = new Error('Required params missing')
+    let error = new Error('Function parameter requirement(s) not met')
     error.status = 400
     return Promise.reject(error)
   }
-  let clearQuery = `UPDATE products SET conversionFactorId = NULL, conversionFactor = NULL WHERE id = '${productId}' OR conversionFactorId = '${conversionFactorId}';`
-  let updateQuery = `UPDATE products SET conversionFactorId = '${conversionFactorId}', conversionFactor = '${conversionFactor}' WHERE id = '${productId}'`
   return db.sequelize.transaction(transaction => {
-    return db.sequelize.query(clearQuery, { transaction })
-      .then(() => db.sequelize.query(updateQuery, { transaction }))
-      .catch(error => {
-        logging.error(error, 'modules/queries/products.addConvFactorInfo() errored')
-        return Promise.reject(error)
-      })
+    let deleteQuery = `DELETE FROM conversionFactors WHERE productId = '${productId}' OR  id = '${conversionFactorId}';`
+    let insertQuery = `INSERT INTO conversionFactors (id, productId, conversionFactor) VALUES ('${conversionFactorId}', '${productId}', ${conversionFactor});`
+    return db.sequelize
+      .query(deleteQuery, { transaction })
+      .then(() => db.sequelize.query(insertQuery, { transaction }))
+  }).catch(error => {
+    logging.error(error, './modules/queries/products.addConvFactorInfo() errored')
+    return Promise.reject(error)
   })
 }
 
 // backup conversionFactor data
 function backupConvFactorData (data) {
-  return fs
-    .outputJson('./data/disConFactor.json', data)
-    .then(() => Promise.resolve())
+  return db.ConversionFactors
+    .findAll()
+    .then(data => fs.outputJson('./data/conversionFactors.json', data))
     .catch(error => {
-      logging.error(error, 'modules/queries/products.backupConvFactorData() errored')
-      return Promise.reject(error)
-    })
-}
-
-// extract conversionFactor information from products table
-function extractConvFactorData () {
-  return db.Products
-    .findAll({
-      where: {
-        conversionFactorId: { [notEqualTo]: null },
-      },
-    })
-    .then(data => {
-      let mappedData = data.map(entry => {
-        return {
-          productId: entry.id,
-          conversionFactorId: entry.conversionFactorId,
-          conversionFactor: entry.conversionFactor,
-        }
-      })
-      return Promise.resolve(mappedData)
-    })
-    .catch(error => {
-      logging.error(error, 'modules/queries/products.extractConvFactorData() errored')
+      logging.error(error, './modules/queries/products.backupConvFactorData() errored')
       return Promise.reject(error)
     })
 }
 
 // receives a productId and a conversionFactorId (3M productId)
-// query for a list of productId's which carries the same conversionFactorId
+// query for a list of product records which carried the same conversionFactorId
 // excluding the search target productId
 function findDuplicates (productId, conversionFactorId) {
-  return db.Products
-    .findAll({
-      where: {
-        id: { [notEqualTo]: productId },
-        conversionFactorId: conversionFactorId,
-      },
-    })
-    .then(data => Promise.resolve(data))
+  let queryString = `SELECT a.*, b.id AS conversionFactorId, b.conversionFactor FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId WHERE a.id != '${productId}' AND  b.id = '${conversionFactorId}';`
+  return db.sequelize
+    .query(queryString)
+    .spread((data, meta) => Promise.resolve(data))
     .catch(error => {
-      logging.error(error, 'modules/queries/products.findDuplicates() errored')
+      logging.error(error, './modules/queries/products.findDuplicates() errored')
       return Promise.reject(error)
     })
 }
 
 // find a product instance
 function getProduct (productId) {
-  return db.Products
+  return db.sequelize
     .findById(productId)
     .then(productInstance => {
       if (!productInstance) {
@@ -110,7 +77,7 @@ function getProduct (productId) {
       }
     })
     .catch(error => {
-      logging.error(error, 'modules/queries/products.getProduct() errored')
+      logging.error(error, './modules/queries/products.getProduct() errored')
       return Promise.reject(error)
     })
 }
@@ -118,16 +85,15 @@ function getProduct (productId) {
 // get product listing ordered by productId, and does
 // server-side pagination if specified
 function getProducts (limit = null, offset = null) {
-  let options = { order: ['id'] }
-  if ((limit !== null) && (offset !== null)) {
-    options.limit = limit
-    options.offset = offset
-  }
-  return db.Products
-    .findAll(options)
-    .then(data => Promise.resolve(data))
+  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id'
+  queryString += ((limit !== null) && (offset !== null))
+    ? ` LIMIT ${limit} OFFSET ${offset};`
+    : ';'
+  return db.sequelize
+    .query(queryString)
+    .spread((data, meta) => Promise.resolve(data))
     .catch(error => {
-      logging.error(error, 'modules/queries/products.getProducts() errored')
+      logging.error(error, './modules/queries/products.getProducts() errored')
       return Promise.reject(error)
     })
 }
@@ -138,21 +104,18 @@ function recordCount () {
     .query('SELECT id FROM products;')
     .spread((data, meta) => Promise.resolve(data.length))
     .catch(error => {
-      logging.error(error, 'modules/queries/products.recordCount() errored')
+      logging.error(error, './modules/queries/products.recordCount() errored')
       return Promise.reject(error)
     })
 }
 
 // remove conversion factor information from specified product record
-function removeConvFactorInfo (productInstance) {
-  return productInstance
-    .update({
-      conversionFactorId: null,
-      conversionFactor: null,
-    })
+function removeConvFactorInfo (productId) {
+  return db.sequelize
+    .query(`DELETE FROM conversionFactors WHERE productId = '${productId}';`)
     .then(() => Promise.resolve())
     .catch(error => {
-      logging.error(error, 'modules/queries/products.removeConvFactorInfo() errored')
+      logging.error(error, './modules/queries/products.removeConvFactorInfo() errored')
       return Promise.reject(error)
     })
 }

@@ -1,20 +1,18 @@
 const DbfParser = require('node-dbf-iconv')
+const dotEnv = require('dotenv')
 const fs = require('fs-extra')
-const moment = require('moment-timezone')
-const ora = require('ora')
 const path = require('path')
 const Promise = require('bluebird')
 
 const logging = require('../../controllers/logging')
 
-const timeString = moment.tz().format('YYYYMMDDHHmmss')
-let spinner = null
+dotEnv.config()
 
-module.exports = db => {
-  let location = db.liveDataConfig.location
-  let lookup = db.liveDataConfig.tableLookup
-  let sequence = db.liveDataConfig.loadSequence
+const location = process.env.LIVE_DATA_LOCATION
+const convFactorLocation = path.resolve('./data/conversionFactors.json')
+const customSalesDataLocation = path.resolve('./data/customSalesData.json')
 
+module.exports = () => {
   let data = {
     clients: [],
     products: [],
@@ -25,10 +23,10 @@ module.exports = db => {
   }
 
   let parsers = {
-    clients: createParser(path.join(location, lookup[sequence[0]]), 'big5'),
-    products: createParser(path.join(location, lookup[sequence[1]]), 'big5'),
-    invoices: createParser(path.join(location, lookup[sequence[2]]), 'big5'),
-    sales: createParser(path.join(location, lookup[sequence[3]]), 'big5'),
+    clients: createParser(path.join(location, 'customer.DBF'), 'big5'),
+    products: createParser(path.join(location, 'item.DBF'), 'big5'),
+    invoices: createParser(path.join(location, 'sal.DBF'), 'big5'),
+    sales: createParser(path.join(location, 'saldet.DBF'), 'big5'),
   }
 
   parsers.clients.on('record', record => {
@@ -50,8 +48,6 @@ module.exports = db => {
     invoices: getEndEventHandle(parsers.invoices),
     sales: getEndEventHandle(parsers.sales),
   }
-  spinner = ora('Parsing live data').start()
-  spinner.start()
   parsers.clients.parse()
   parsers.products.parse()
   parsers.invoices.parse()
@@ -66,97 +62,59 @@ module.exports = db => {
     ])
     .then(() => {
       return fs
-        .readJSON(db.liveDataConfig.convFactorLocation)
+        .readJSON(convFactorLocation)
         .then(recordset => {
           if (Array.isArray(recordset)) {
             recordset.forEach(record => {
               data.conversionFactors.push({
+                id: record.id,
                 productId: record.productId,
-                conversionFactorId: record.conversionFactorId,
                 conversionFactor: parseFloat(record.conversionFactor),
               })
             })
           }
           return Promise.resolve()
         }).catch(error => {
-          spinner.stop()
-          logging.error(error, 'disConFactor.json data extraction failure')
+          logging.error(error, 'conversionFactors.json data extraction failure')
           return Promise.reject(error)
         })
     })
     .then(() => {
       return fs
-        .readJSON(db.liveDataConfig.customDataLocation)
+        .readJSON(customSalesDataLocation)
         .then(recordset => {
           if (Array.isArray(recordset)) {
             recordset.forEach(record => {
-              data.customSalesData.push(record)
+              data.customSalesData.push({
+                id: record.id,
+                invoiceId: record.invoiceId,
+                clientId: record.clientId,
+                salesId: record.salesId,
+                productId: record.productId,
+                conversionFactorId: record.conversionFactorId,
+                unitPrice: record.unitPrice ? parseFloat(record.unitPrice) : null,
+                _preserved: record._preserved,
+                _clientId: record._clientId,
+                _unitPrice: record._unitPrice ? parseFloat(record._unitPrice) : null,
+                _quantity: record._quantity ? parseFloat(record._quantity) : null,
+                _employeeId: record._employeeId,
+              })
             })
           }
           return Promise.resolve()
         }).catch(error => {
-          spinner.stop()
-          logging.error(error, 'customSalesData.json data extraction failure')
+          logging.error(error, 'conversionFactors.json data extraction failure')
           return Promise.reject(error)
         })
     })
     .then(() => {
-      if (db.liveDataConfig.backup) {
-        let fileNames = [
-          'clients.json',
-          'products.json',
-          'invoices.json',
-          'sales.json',
-          'conversionFactors.json',
-          'customSalesData.json',
-        ]
-        let references = [
-          'clients',
-          'products',
-          'invoices',
-          'sales',
-          'conversionFactors',
-          'customSalesData',
-        ]
-        return Promise.each(fileNames, (fileName, index) => {
-          return fs.outputJson(
-            resolveJointPaths(fileName),
-            data[references[index]]
-          ).catch(error => {
-            spinner.stop()
-            logging.error(error, `${fileName} file backup failure`)
-            return Promise.reject(error)
-          })
-        }).then(() => {
-          spinner.stop()
-          logging.console('.json file backup completed')
-          return Promise.resolve()
-        }).catch(error => {
-          spinner.stop()
-          return Promise.reject(error)
-        })
-      } else {
-        spinner.stop()
-        logging.console('Skip .json file backup')
-        return Promise.resolve()
-      }
-    })
-    .then(() => {
-      spinner.stop()
       logging.console('Live data extracted')
       return Promise.resolve(data)
     })
     .catch(error => {
-      spinner.stop()
       logging.error(error, 'Live data extraction failure')
       return Promise.reject(error)
     })
-}
-
-function resolveJointPaths (fileName) {
-  let directory = path.resolve('./backup', timeString)
-  fs.ensureDirSync(directory)
-  return path.join(directory, fileName)
 }
 
 function createParser (dataSourcePath, encoding) {
@@ -209,6 +167,7 @@ function recordSalesData (record, salesRecords) {
   if (
     (!record['@deleted']) &&
     // skipping products that does not actually exist in the items data table
+    // hardcoded according to the actual data
     (record.ITEMNO !== 'G-85034') &&
     (record.ITEMNO !== 'B890393') &&
     (record.ITEMNO !== 'B25290')

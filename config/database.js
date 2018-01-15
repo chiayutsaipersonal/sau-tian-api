@@ -7,17 +7,6 @@ const appConfig = require('./app')
 
 const logging = require('../controllers/logging')
 
-const dropSchemaSequence = [
-  'CustomSalesData',
-  'Sales',
-  'Invoices',
-  'ConversionFactors',
-  'Products',
-  'Clients',
-]
-
-const modelLocation = path.resolve('./models/definitions')
-
 // settings
 const ormVerbose = false
 
@@ -36,8 +25,6 @@ const sqlite = {
     deletedAt: null, // 'deletedAt'
   },
   operatorsAliases: false,
-  dropSchemaSequence,
-  modelLocation,
 }
 
 const mysql = {
@@ -67,17 +54,6 @@ const mysql = {
     deletedAt: null, // 'deletedAt'
   },
   operatorsAliases: false,
-  dropSchemaSequence,
-  modelLocation,
 }
 
-module.exports = Object.assign(
-  {
-    models: {
-      location: modelLocation,
-      files: [],
-      references: [],
-    },
-  },
-  eVars.NODE_ENV === 'staging' ? mysql : sqlite,
-)
+module.exports = eVars.NODE_ENV === 'staging' ? mysql : sqlite

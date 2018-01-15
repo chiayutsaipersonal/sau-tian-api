@@ -8,20 +8,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    conversionFactorId: { // 3M SAP id
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-    },
-    conversionFactor: { // DIS_CON_FACTOR
-      type: DataTypes.DECIMAL(11, 4),
-      allowNull: true,
-    },
     name: { // ITEMNAME
       type: DataTypes.STRING,
       allowNull: true,
     },
-    stockQty: { // original field: STOCKQTY, output field: inv
+    stockQty: { // STOCKQTY
       type: DataTypes.INTEGER,
       allowNull: true,
     },
