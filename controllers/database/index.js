@@ -14,7 +14,7 @@ const db = {
 
 module.exports = db
 
-const verifyDatasource = require('./verifyDatasource')
+const verifyLiveDataSource = require('./verifyLiveDataSource')
 const dropSchemas = require('./dropSchemas')
 const registerModels = require('./registerModels')
 const syncModels = require('./syncModels')
@@ -32,7 +32,7 @@ function hydrateWorkingData () {
 function initialize () {
   return sequelize
     .authenticate()
-    .then(() => verifyDatasource())
+    .then(() => verifyLiveDataSource())
     .then(() => dropSchemas())
     .then(() => registerModels(db))
     .then(() => syncModels())

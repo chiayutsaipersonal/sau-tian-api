@@ -52,17 +52,14 @@ router
   .post('/',
     (req, res, next) => {
       return productQueries
-        .addConvFactorInfo(
-          req.body.productId,
-          req.body.conversionFactorId,
-          req.body.conversionFactor
-        ).then(() => {
-          return productQueries.backupConvFactorData()
-        }).then(() => {
+        .insertConversionFactor(req.body)
+        .then(() => productQueries.backupConvFactorData())
+        .then(() => {
           req.resJson = { message: 'Conversion factor information updated' }
           next()
           return Promise.resolve()
-        }).catch(error => {
+        })
+        .catch(error => {
           if (error.status) res.status(error.status)
           return next(error)
         })

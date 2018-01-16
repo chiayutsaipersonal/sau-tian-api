@@ -1,14 +1,13 @@
 const DbfParser = require('node-dbf-iconv')
-const dotEnv = require('dotenv')
 const fs = require('fs-extra')
 const path = require('path')
 const Promise = require('bluebird')
 
 const logging = require('../../controllers/logging')
 
-dotEnv.config()
+const eVars = require('../../config/app').eVars
 
-const location = process.env.LIVE_DATA_LOCATION
+const location = eVars.LIVE_DATA_LOCATION
 const convFactorLocation = path.resolve('./data/conversionFactors.json')
 const customSalesDataLocation = path.resolve('./data/customSalesData.json')
 

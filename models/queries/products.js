@@ -3,10 +3,9 @@ const fs = require('fs-extra')
 const db = require('../../controllers/database')
 const logging = require('../../controllers/logging')
 
-const notEqualTo = db.Sequelize.Op.ne
-
 module.exports = {
-  addConvFactorInfo,
+  insertProduct,
+  insertConversionFactor,
   backupConvFactorData,
   findDuplicates,
   getProduct,
@@ -15,8 +14,21 @@ module.exports = {
   removeConvFactorInfo,
 }
 
-// add conversion factor info to a product record
-function addConvFactorInfo (productId = null, conversionFactorId = null, conversionFactor = null) {
+// insert a product record
+function insertProduct (record) {
+  return db.Products
+    .create(record)
+    .then(() => Promise.resolve())
+    .catch(error => {
+      logging.error(error, './modules/queries/products.insert() errored')
+      return Promise.reject(error)
+    })
+}
+
+// insert a conversion factor record
+// all related records are removed before hand
+// e.g. same productId or same conversion factor Id
+function insertConversionFactor ({ productId = null, conversionFactorId = null, conversionFactor = null }) {
   if (
     (productId === null) ||
     (conversionFactorId === null) ||
@@ -33,7 +45,7 @@ function addConvFactorInfo (productId = null, conversionFactorId = null, convers
       .query(deleteQuery, { transaction })
       .then(() => db.sequelize.query(insertQuery, { transaction }))
   }).catch(error => {
-    logging.error(error, './modules/queries/products.addConvFactorInfo() errored')
+    logging.error(error, './modules/queries/products.insertConversionFactor() errored')
     return Promise.reject(error)
   })
 }

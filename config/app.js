@@ -1,4 +1,6 @@
-require('dotenv').config()
+const dotEnv = require('dotenv')
+
+dotEnv.config()
 const eVars = process.env
 
 // settings
@@ -26,20 +28,21 @@ const hosting = {
   },
 }
 
+const timezone = hosting[eVars.NODE_ENV].timezone
 const protocol = hosting[eVars.NODE_ENV].protocol
 const domain = hosting[eVars.NODE_ENV].domain
 const port = hosting[eVars.NODE_ENV].port
-const timezone = hosting[eVars.NODE_ENV].timezone
 const hostUrl = `${protocol}://${domain}:${port}/${reference}`
 
 module.exports = {
-  reference,
-  title,
+  eVars,
   hosting: {
     protocol,
     domain,
     port,
   },
   hostUrl,
+  reference,
   timezone,
+  title,
 }
