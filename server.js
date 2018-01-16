@@ -2,7 +2,6 @@
 
 // load npm packages
 const bodyParser = require('body-parser')
-// const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const dotEnv = require('dotenv')
 const express = require('express')
@@ -98,7 +97,6 @@ Promise
     }
     app.use(bodyParser.json())
     app.use(bodyParser.urlencoded({ extended: false }))
-    // app.use(cookieParser());
     /* serve static assets */
     app.use(express.static(path.join(__dirname, 'dist', 'public')))
     /* custom modules */
