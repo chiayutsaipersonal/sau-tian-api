@@ -1,4 +1,4 @@
-const fs = require('fs-extra')
+// const fs = require('fs-extra')
 const uuidV4 = require('uuid/v4')
 
 const db = require('../../controllers/database')
@@ -6,17 +6,28 @@ const logging = require('../../controllers/logging')
 
 module.exports = {
   alignCustomSalesData,
-  backupCustomSalesData,
   extractReqBodyData,
   extractWorkingData,
+  getCustomSalesRecord,
   getLiveData,
   recordUpsert,
+  // backupCustomSalesData,
   // getCustomSalesData,
-  // getCustomSalesRecord,
   // getIrreleventCustomData,
 }
 
-// align custom sales data by
+// get customSalesData record by id
+function getCustomSalesRecord (id) {
+  return db.CustomSalesData
+    .findById(id)
+    .then(data => Promise.resolve(data || {}))
+    .catch(error => {
+      logging.error(error, 'modules/queries/invoices.getCustomSalesRecord() errored')
+      return Promise.reject(error)
+    })
+}
+
+// align custom sales data
 // removing all data entries that are within the specified date range
 // insert validated working data entries
 function alignCustomSalesData (startDate, endDate, validatedData) {
@@ -30,18 +41,6 @@ function alignCustomSalesData (startDate, endDate, validatedData) {
     logging.error(error, 'modules/queries/invoices.alignCustomSalesData() errored')
     return Promise.reject(error)
   })
-}
-
-// backup custom invoice data
-function backupCustomSalesData (data) {
-  return db.CustomSalesData
-    .findAll()
-    .then(data => fs.outputJson('./data/customSalesData.json', data))
-    .then(() => Promise.resolve())
-    .catch(error => {
-      logging.error(error, 'modules/queries/invoices.backupCustomInvoiceData() errored')
-      return Promise.reject(error)
-    })
 }
 
 // prep record data from request POST data
@@ -85,10 +84,10 @@ function extractWorkingData (liveData) {
         salesId: entry.salesId,
         productId: entry.productId,
         conversionFactorId: entry.conversionFactorId,
-        unitPrice: entry.price,
+        unitPrice: entry.unitPrice,
         _preserved: entry._preserved,
         _clientId: entry._clientId,
-        _unitPrice: entry._price,
+        _unitPrice: entry._unitPrice,
         _quantity: entry._quantity,
         _employeeId: entry._employeeId,
       })
@@ -165,29 +164,22 @@ function recordUpsert (recordData) {
     })
 }
 
+// // backup custom invoice data
+// function backupCustomSalesData (data) {
+//   return db.CustomSalesData
+//     .findAll()
+//     .then(data => fs.outputJson('./data/customSalesData.json', data))
+//     .then(() => Promise.resolve())
+//     .catch(error => {
+//       logging.error(error, 'modules/queries/invoices.backupCustomInvoiceData() errored')
+//       return Promise.reject(error)
+//     })
+// }
+
 // // get full dataset from customSalesData table
 // function getCustomSalesData () {
 //   return db.CustomSalesData
 //     .findAll()
-// }
-
-// // get customSalesData record by id
-// function getCustomSalesRecord (recordId) {
-//   return db.CustomSalesData
-//     .findById(recordId)
-//     .then(recordInstance => {
-//       if (!recordInstance) {
-//         let error = new Error(`Specifiec customRecord (id: '${recordId}') does not exist`)
-//         error.status = 400
-//         return Promise.reject(error)
-//       } else {
-//         return Promise.resolve(recordInstance)
-//       }
-//     })
-//     .catch(error => {
-//       logging.error(error, 'modules/queries/invoices.getCustomSalesRecord() errored')
-//       return Promise.reject(error)
-//     })
 // }
 
 // // get custom invoice data that's outside of the specified date range

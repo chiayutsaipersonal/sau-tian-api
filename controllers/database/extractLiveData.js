@@ -59,53 +59,53 @@ module.exports = () => {
       endEventHandles.invoices,
       endEventHandles.sales,
     ])
-    .then(() => {
-      return fs
-        .readJSON(convFactorLocation)
-        .then(recordset => {
-          if (Array.isArray(recordset)) {
-            recordset.forEach(record => {
-              data.conversionFactors.push({
-                id: record.id,
-                productId: record.productId,
-                conversionFactor: parseFloat(record.conversionFactor),
-              })
-            })
-          }
-          return Promise.resolve()
-        }).catch(error => {
-          logging.error(error, 'conversionFactors.json data extraction failure')
-          return Promise.reject(error)
-        })
-    })
-    .then(() => {
-      return fs
-        .readJSON(customSalesDataLocation)
-        .then(recordset => {
-          if (Array.isArray(recordset)) {
-            recordset.forEach(record => {
-              data.customSalesData.push({
-                id: record.id,
-                invoiceId: record.invoiceId,
-                clientId: record.clientId,
-                salesId: record.salesId,
-                productId: record.productId,
-                conversionFactorId: record.conversionFactorId,
-                unitPrice: record.unitPrice ? parseFloat(record.unitPrice) : null,
-                _preserved: record._preserved,
-                _clientId: record._clientId,
-                _unitPrice: record._unitPrice ? parseFloat(record._unitPrice) : null,
-                _quantity: record._quantity ? parseFloat(record._quantity) : null,
-                _employeeId: record._employeeId,
-              })
-            })
-          }
-          return Promise.resolve()
-        }).catch(error => {
-          logging.error(error, 'conversionFactors.json data extraction failure')
-          return Promise.reject(error)
-        })
-    })
+    // .then(() => {
+    //   return fs
+    //     .readJSON(convFactorLocation)
+    //     .then(recordset => {
+    //       if (Array.isArray(recordset)) {
+    //         recordset.forEach(record => {
+    //           data.conversionFactors.push({
+    //             id: record.id,
+    //             productId: record.productId,
+    //             conversionFactor: parseFloat(record.conversionFactor),
+    //           })
+    //         })
+    //       }
+    //       return Promise.resolve()
+    //     }).catch(error => {
+    //       logging.error(error, 'conversionFactors.json data extraction failure')
+    //       return Promise.reject(error)
+    //     })
+    // })
+    // .then(() => {
+    //   return fs
+    //     .readJSON(customSalesDataLocation)
+    //     .then(recordset => {
+    //       if (Array.isArray(recordset)) {
+    //         recordset.forEach(record => {
+    //           data.customSalesData.push({
+    //             id: record.id,
+    //             invoiceId: record.invoiceId,
+    //             clientId: record.clientId,
+    //             salesId: record.salesId,
+    //             productId: record.productId,
+    //             conversionFactorId: record.conversionFactorId,
+    //             unitPrice: record.unitPrice ? parseFloat(record.unitPrice) : null,
+    //             _preserved: record._preserved,
+    //             _clientId: record._clientId,
+    //             _unitPrice: record._unitPrice ? parseFloat(record._unitPrice) : null,
+    //             _quantity: record._quantity ? parseFloat(record._quantity) : null,
+    //             _employeeId: record._employeeId,
+    //           })
+    //         })
+    //       }
+    //       return Promise.resolve()
+    //     }).catch(error => {
+    //       logging.error(error, 'conversionFactors.json data extraction failure')
+    //       return Promise.reject(error)
+    //     })
+    // })
     .then(() => {
       logging.console('Live data extracted')
       return Promise.resolve(data)

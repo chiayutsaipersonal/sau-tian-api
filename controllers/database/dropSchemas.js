@@ -5,9 +5,8 @@ const logging = require('../logging')
 const utilityQueries = require('../../models/queries/utilities')
 
 const dropSchemaSequence = [
-  'WorkingSalesData',
-  'CustomSalesData',
-  'ConversionFactors',
+  // 'CustomSalesData',
+  // 'ConversionFactors',
   'Sales',
   'Invoices',
   'Products',

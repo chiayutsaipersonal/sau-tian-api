@@ -3,23 +3,23 @@ const logging = require('../logging')
 module.exports = db => {
   logging.console('Assign ORM table relationships')
 
-  db.Products.hasOne(db.ConversionFactors, {
-    constraints: true,
-    onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT',
-  }, {
-    foreignKey: 'productId',
-    targetKey: 'id',
-  })
+  // db.Products.hasOne(db.ConversionFactors, {
+  //   constraints: true,
+  //   onUpdate: 'CASCADE',
+  //   onDelete: 'RESTRICT',
+  // }, {
+  //   foreignKey: 'productId',
+  //   targetKey: 'id',
+  // })
 
-  db.ConversionFactors.belongsTo(db.Products, {
-    constraints: true,
-    onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT',
-  }, {
-    foreignKey: 'productId',
-    targetKey: 'id',
-  })
+  // db.ConversionFactors.belongsTo(db.Products, {
+  //   constraints: true,
+  //   onUpdate: 'CASCADE',
+  //   onDelete: 'RESTRICT',
+  // }, {
+  //   foreignKey: 'productId',
+  //   targetKey: 'id',
+  // })
 
   db.Products.belongsToMany(db.Invoices, {
     constraints: true,

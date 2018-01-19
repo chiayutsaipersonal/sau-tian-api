@@ -1,17 +1,33 @@
 const fs = require('fs-extra')
+const moment = require('moment-timezone')
+const path = require('path')
+const Promise = require('bluebird')
 
 const db = require('../../controllers/database')
 const logging = require('../../controllers/logging')
 
 module.exports = {
-  insertProduct,
-  insertConversionFactor,
   backupConvFactorData,
   findDuplicates,
   getProduct,
   getProducts,
+  batchSequentialInsert,
+  insertProduct,
+  insertConversionFactor,
   recordCount,
   removeConvFactorInfo,
+  resetConversionFactors,
+}
+
+// clear existing conversion factor data
+function resetConversionFactors () {
+  return db.ConversionFactors
+    .destroy({ where: {} })
+    .then(() => Promise.resolve())
+    .catch(error => {
+      logging.error(error, './modules/queries/products.resetConvsionFactors() errored')
+      return Promise.reject(error)
+    })
 }
 
 // insert a product record
@@ -25,22 +41,42 @@ function insertProduct (record) {
     })
 }
 
+// batch insert product data sequentially
+// each record is checked prior to insert to avoid constraint violation
+// problematic records are skipped
+function batchSequentialInsert (data) {
+  let convertedData = JSON.parse(data)
+  return Promise.each(convertedData, entry => {
+    return getProduct(entry.productId)
+      .then(product => {
+        if (!product) {
+          logging.warning(`'${entry.productId}' is not an existing product`)
+          return Promise.resolve()
+        } else {
+          return insertConversionFactor(entry)
+        }
+      })
+      .catch(error => Promise.reject(error))
+  }).then(() => {
+    return Promise.resolve()
+  }).catch(error => {
+    logging.error(error, './modules/queries/products.batchSequentialInsert() errored')
+    return Promise.reject(error)
+  })
+}
+
 // insert a conversion factor record
 // all related records are removed before hand
 // e.g. same productId or same conversion factor Id
-function insertConversionFactor ({ productId = null, conversionFactorId = null, conversionFactor = null }) {
-  if (
-    (productId === null) ||
-    (conversionFactorId === null) ||
-    (conversionFactor === null)
-  ) {
+function insertConversionFactor ({ id = null, productId = null, conversionFactor = null }) {
+  if ((id === null) || (productId === null) || (conversionFactor === null)) {
     let error = new Error('Function parameter requirement(s) not met')
     error.status = 400
     return Promise.reject(error)
   }
   return db.sequelize.transaction(transaction => {
-    let deleteQuery = `DELETE FROM conversionFactors WHERE productId = '${productId}' OR  id = '${conversionFactorId}';`
-    let insertQuery = `INSERT INTO conversionFactors (id, productId, conversionFactor) VALUES ('${conversionFactorId}', '${productId}', ${conversionFactor});`
+    let deleteQuery = `DELETE FROM conversionFactors WHERE productId = '${productId}' OR  id = '${id}';`
+    let insertQuery = `INSERT INTO conversionFactors (id, productId, conversionFactor) VALUES ('${id}', '${productId}', ${conversionFactor});`
     return db.sequelize
       .query(deleteQuery, { transaction })
       .then(() => db.sequelize.query(insertQuery, { transaction }))
@@ -51,10 +87,12 @@ function insertConversionFactor ({ productId = null, conversionFactorId = null, 
 }
 
 // backup conversionFactor data
-function backupConvFactorData (data) {
+function backupConvFactorData () {
+  let timeString = moment.tz().format('YYYYMMDDHHmmss')
+  let location = path.resolve(`./data/conversionFactors.${timeString}.json`)
   return db.ConversionFactors
     .findAll()
-    .then(data => fs.outputJson('./data/conversionFactors.json', data))
+    .then(data => fs.outputJson(location, data))
     .catch(error => {
       logging.error(error, './modules/queries/products.backupConvFactorData() errored')
       return Promise.reject(error)
@@ -77,17 +115,9 @@ function findDuplicates (productId, conversionFactorId) {
 
 // find a product instance
 function getProduct (productId) {
-  return db.sequelize
+  return db.Products
     .findById(productId)
-    .then(productInstance => {
-      if (!productInstance) {
-        let error = new Error(`Specifiec product (id: '${productId}') does not exist`)
-        error.status = 400
-        return Promise.reject(error)
-      } else {
-        return Promise.resolve(productInstance)
-      }
-    })
+    .then(productInstance => Promise.resolve(productInstance))
     .catch(error => {
       logging.error(error, './modules/queries/products.getProduct() errored')
       return Promise.reject(error)

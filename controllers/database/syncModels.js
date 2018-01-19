@@ -9,9 +9,8 @@ const models = [
   { reference: 'Invoices', force: true },
   { reference: 'Products', force: true },
   { reference: 'Sales', force: true },
-  { reference: 'ConversionFactors', force: true },
-  { reference: 'CustomSalesData', force: true },
-  { reference: 'WorkingSalesData', force: true },
+  { reference: 'ConversionFactors', force: false },
+  { reference: 'CustomSalesData', force: false },
 ]
 
 module.exports = () => {

@@ -9,7 +9,6 @@ const models = [
   { reference: 'Sales', definition: 'sales.js' },
   { reference: 'ConversionFactors', definition: 'conversionFactors.js' },
   { reference: 'CustomSalesData', definition: 'customSalesData.js' },
-  { reference: 'WorkingSalesData', definition: 'workingSalesData.js' },
 ]
 
 module.exports = db => {

@@ -13,7 +13,7 @@ const liveDataFiles = [
   path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'item.DBF'),
   path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'sal.DBF'),
   path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'saldet.DBF'),
-  path.resolve('./data/conversionFactors.json'),
+  // path.resolve('./data/conversionFactors.json'),
 ]
 
 module.exports = () => {
