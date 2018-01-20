@@ -33,7 +33,7 @@ router
       return invoiceQueries.extractReqBodyData(req.body)
         .then(data => {
           return invoiceQueries.recordUpsert(data)
-            .then(() => invoiceQueries.getCustomSalesRecord(data.id))
+            .then(() => invoiceQueries.getCustomSalesRecord(req.body.customSalesDataId))
         })
         .then(data => {
           req.resJson = { data }
@@ -41,7 +41,21 @@ router
           return Promise.resolve()
         })
         .catch(error => next(error))
-    }
-  )
+    })
+  // delete customSalesData records within a time period
+  .delete('/',
+    (req, res, next) => {
+      let dateRange = [req.query.startDate, req.query.endDate]
+      return invoiceQueries
+        .deleteCustomSalesData(...dateRange)
+        .then(() => {
+          req.resJson = {
+            message: 'record removal completed',
+          }
+          next()
+          return Promise.resolve()
+        })
+        .catch(error => next(error))
+    })
 
 module.exports = router

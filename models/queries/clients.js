@@ -5,6 +5,7 @@ const between = db.Sequelize.Op.between
 
 module.exports = {
   getClients,
+  getSimpleClientList,
   recordCount,
 }
 
@@ -26,6 +27,23 @@ function getClients (limit = null, offset = null) {
     .then(data => Promise.resolve(data))
     .catch(error => {
       logging.error(error, './modules/queries/products.getClients() errored')
+      return Promise.reject(error)
+    })
+}
+
+function getSimpleClientList () {
+  let options = {
+    where: {
+      areaId: { [between]: [1, 4] },
+    },
+    attributes: ['id', 'name', 'areaId'],
+    order: ['areaId', 'id'],
+  }
+  return db.Clients
+    .findAll(options)
+    .then(data => Promise.resolve(data))
+    .catch(error => {
+      logging.error(error, './modules/queries/products.getSimpleClientList() errored')
       return Promise.reject(error)
     })
 }

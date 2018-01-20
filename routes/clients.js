@@ -23,5 +23,18 @@ router
         .catch(error => next(error))
     }
   )
+  // GET a simple client list of id, name, areaId without pagination
+  .get('/simpleList',
+    (req, res, next) => {
+      return clientQueries
+        .getSimpleClientList()
+        .then(data => {
+          req.resJson = { data }
+          next()
+          return Promise.resolve()
+        })
+        .catch(error => next(error))
+    }
+  )
 
 module.exports = router

@@ -6,6 +6,7 @@ const logging = require('../../controllers/logging')
 
 module.exports = {
   alignCustomSalesData,
+  deleteCustomSalesData,
   extractReqBodyData,
   extractWorkingData,
   getCustomSalesRecord,
@@ -14,6 +15,18 @@ module.exports = {
   // backupCustomSalesData,
   // getCustomSalesData,
   // getIrreleventCustomData,
+}
+
+// remove any custom sales data records within a time period
+function deleteCustomSalesData (startDate, endDate) {
+  let deleteQuery = `DELETE FROM customSalesData WHERE invoiceId IN (SELECT id FROM invoices WHERE date BETWEEN '${startDate}' AND '${endDate}');`
+  return db.sequelize
+    .query(deleteQuery)
+    .then(() => Promise.resolve())
+    .catch(error => {
+      logging.error(error, 'modules/queries/invoices.deleteCustomSalesData() errored')
+      return Promise.reject(error)
+    })
 }
 
 // get customSalesData record by id
