@@ -42,7 +42,7 @@ function setupPreRoutingMiddlewares (app) {
   }
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(express.static(path.resolve('./dist/static'))) // serve static assets
+  app.use(express.static(path.resolve('./dist'))) // serve static assets
   apiRouter.use(rejectApiCallsBeforeReady) // serve static assets
   return Promise.resolve()
 }
