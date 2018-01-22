@@ -45,7 +45,7 @@ function setupPreRoutingMiddlewares (app) {
   }
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
-  app.use('/sauTian', express.static(path.resolve('./dist/static'))) // serve static assets
+  app.use('/sauTian', express.static(path.resolve('./dist'))) // serve static assets
   // app.use(express.static(path.resolve('./dist/static'))) // serve static assets
   // app.use(express.static(path.join(__dirname, 'dist', 'static'))) // serve static assets
   // app.use(express.static(path.join(__dirname, 'dist', 'public'))) // serve static assets
