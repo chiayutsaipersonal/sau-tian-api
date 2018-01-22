@@ -8,7 +8,7 @@ router.get('/', (req, res, next) => {
   return res
     .status(200)
     .type('text/html;charset=utf-8')
-    .sendFile(path.resolve('./dist/public/index.html'))
+    .sendFile(path.resolve('./dist/index.html'))
 })
 
 module.exports = router
