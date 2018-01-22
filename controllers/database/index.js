@@ -23,7 +23,8 @@ const extractLiveData = require('./extractLiveData')
 const buildWorkingData = require('./buildWorkingData')
 
 function hydrateWorkingData () {
-  return extractLiveData()
+  return verifyLiveDataSource()
+    .then(() => extractLiveData())
     .then(liveData => buildWorkingData(db, liveData))
     .then(() => Promise.resolve(`${dbConfig.dialect} working database hydrated with live data...`))
     .catch(error => Promise.reject(error))
@@ -32,7 +33,7 @@ function hydrateWorkingData () {
 function initialize () {
   return sequelize
     .authenticate()
-    .then(() => verifyLiveDataSource())
+    // .then(() => verifyLiveDataSource())
     .then(() => dropSchemas())
     .then(() => registerModels(db))
     .then(() => syncModels())
