@@ -38,13 +38,14 @@ function setupPreRoutingMiddlewares (app) {
   if (eVars.NODE_ENV === 'production') app.use(favicon(path.resolve('./dist/static/favicon.ico')))
   // if (eVars.NODE_ENV === 'production') app.use(favicon(path.join(__dirname, 'dist', 'static', 'favicon.ico')))
   // if (eVars.NODE_ENV === 'production') app.use(favicon(path.join(__dirname, 'dist', 'public', 'favicon.ico')))
+  app.use(logger('dev'))
   if (eVars.NODE_ENV === 'development') {
-    app.use(logger('dev'))
+    // app.use(logger('dev'))
     app.use(cors())
   }
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(express.static(path.resolve('./dist'))) // serve static assets
+  app.use('/sauTian', express.static(path.resolve('./dist/static'))) // serve static assets
   // app.use(express.static(path.resolve('./dist/static'))) // serve static assets
   // app.use(express.static(path.join(__dirname, 'dist', 'static'))) // serve static assets
   // app.use(express.static(path.join(__dirname, 'dist', 'public'))) // serve static assets
