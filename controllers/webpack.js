@@ -11,6 +11,7 @@ module.exports = app => {
   if (eVars.NODE_ENV === 'production') return Promise.resolve('Skipping Webpack HMR initialization in production mode')
   logging.warning('Setup Webpack HMR')
   let webpackCompiler = null
+  // return webpackConfigSource
   return require('../../sau-tian-client/build/webpack.dev.conf')
     .then(webpackConfig => {
       webpackConfig.entry.app.push('webpack-hot-middleware/client?reload=true')

@@ -9,6 +9,7 @@ router.get('/', (req, res, next) => {
     .status(200)
     .type('text/html;charset=utf-8')
     .sendFile(path.resolve('./dist/index.html'))
+  // .sendFile(path.resolve('./dist/public/index.html'))
 })
 
 module.exports = router

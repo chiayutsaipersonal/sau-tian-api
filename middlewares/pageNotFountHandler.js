@@ -12,4 +12,5 @@ module.exports = (req, res, next) => {
     .status(301)
     .type('text/html;charset=utf-8')
     .sendFile(path.resolve('./dist/index.html'))
+  // .sendFile(path.resolve('./dist/public/index.html'))
 }
