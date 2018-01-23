@@ -5,8 +5,52 @@ const between = db.Sequelize.Op.between
 
 module.exports = {
   getClients,
+  getClientReport,
   getSimpleClientList,
   recordCount,
+}
+
+function getClientReport () {
+  let queryOptions = {
+    attributes: ['id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax'],
+    where: { areaId: { [between]: [1, 4] } },
+    order: ['id'],
+  }
+  return db.Clients
+    .findAll(queryOptions, { logging: console.log })
+    .then(queryResults => {
+      return Promise.resolve(queryResults.map(entry => {
+        return {
+          distributorId: 400005,
+          id: entry.id,
+          name: rectifyString(checkExistence(entry.name, 'Empty Company Name')),
+          registrationId: entry.registrationId,
+          contact: rectifyString(entry.contact),
+          zipCode: checkExistence(entry.zipCode, '00000'),
+          address: rectifyString(checkExistence(entry.address, 'Empty Address')),
+          telephone: rectifyString(entry.telephone),
+          fax: rectifyString(entry.fax),
+          type: null,
+        }
+      }))
+    })
+    .then(rawReportData => Promise.resolve(rawReportData))
+    .catch(error => {
+      logging.error(error, './modules/queries/products.getClientReport() errored')
+      return Promise.reject(error)
+    })
+}
+
+function checkExistence (dataValue, placeholder) {
+  return dataValue === null ? placeholder : dataValue
+}
+
+function rectifyString (string) {
+  if ((string === null) || (string === '')) {
+    return string
+  } else {
+    return string.replace(',', '').replace('\'', '')
+  }
 }
 
 // get client listing ordered by clientId, and does

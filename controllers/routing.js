@@ -16,6 +16,7 @@ const clients = require('../routes/clients')
 const products = require('../routes/products')
 const invoices = require('../routes/invoices')
 const reloadPosData = require('../routes/reloadPosData')
+const generateReport = require('../routes/generateReport')
 
 logging.console('Loading custom middlewares')
 const renderErrorPage = require('../middlewares/renderErrorPage')
@@ -61,6 +62,7 @@ function setupAppRouting (app) {
   apiRouter.use('/products', products)
   apiRouter.use('/invoices', invoices)
   apiRouter.use('/reloadPosData', reloadPosData)
+  apiRouter.use('/generateReport', generateReport)
   return Promise.resolve()
 }
 
