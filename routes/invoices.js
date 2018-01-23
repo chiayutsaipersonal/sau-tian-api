@@ -57,5 +57,20 @@ router
         })
         .catch(error => next(error))
     })
+  // delete customSalesData records within a time period of a particular product
+  .delete('/products/:productId',
+    (req, res, next) => {
+      let dateRange = [req.query.startDate, req.query.endDate]
+      return invoiceQueries
+        .deleteCustomSalesDataByProduct(...dateRange, req.params.productId)
+        .then(() => {
+          req.resJson = {
+            message: 'record removal completed',
+          }
+          next()
+          return Promise.resolve()
+        })
+        .catch(error => next(error))
+    })
 
 module.exports = router
