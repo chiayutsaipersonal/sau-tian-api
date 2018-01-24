@@ -8,6 +8,8 @@ module.exports = {
   getClientReport,
   getSimpleClientList,
   recordCount,
+  checkExistence,
+  rectifyString,
 }
 
 function getClientReport () {

@@ -1,3 +1,5 @@
+const path = require('path')
+
 require('dotenv').config()
 
 const logging = require('../controllers/logging')
@@ -66,8 +68,8 @@ function file (req, res, next) {
   return res
     .status(res.statusCode || 200)
     .type(req.resFile.mimeType)
-    .sendFile(req.resFile.filePath)
-    .end()
+    .attachment()
+    .sendFile(path.resolve(req.resFile.filePath))
 }
 
 /*

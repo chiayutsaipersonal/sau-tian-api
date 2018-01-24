@@ -68,6 +68,7 @@ function setupAppRouting (app) {
 
 function setupPostRoutingMiddlewares (app) {
   logging.console('Loading post-routing global middlewares')
+  apiRouter.use(apiResponseHandler.file)
   apiRouter.use(apiResponseHandler.json)
   apiRouter.use(missingApiEndpointHandler) // capture fall-through missing api endpoint request
   apiRouter.use(apiResponseHandler.error)

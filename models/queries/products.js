@@ -5,6 +5,8 @@ const Promise = require('bluebird')
 
 const db = require('../../controllers/database')
 const logging = require('../../controllers/logging')
+const checkExistence = require('./clients').checkExistence
+const rectifyString = require('./clients').rectifyString
 
 module.exports = {
   backupConvFactorData,
@@ -17,6 +19,36 @@ module.exports = {
   recordCount,
   removeConvFactorInfo,
   resetConversionFactors,
+  getProductReport,
+}
+
+// get report data in javascript object format
+function getProductReport () {
+  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor FROM products a INNER JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id;'
+  return db.sequelize
+    .query(queryString)
+    .spread((queryResults, meta) => {
+      return Promise.resolve(queryResults.map(entry => {
+        return {
+          distributorId: 400005,
+          id: entry.id,
+          name: entry.name,
+          length: null,
+          width: null,
+          conversionFactor: checkExistence(entry.conversionFactor, 1),
+          unit: rectifyString(checkExistence(entry.unit, 'unspecified unit')),
+          unitPrice: entry.unitPrice,
+          conversionFactorId: entry.conversionFactorId,
+          asp: null,
+          stockQty: checkExistence(entry.stockQty, 0),
+        }
+      }))
+    })
+    .then(rawReportData => Promise.resolve(rawReportData))
+    .catch(error => {
+      logging.error(error, './modules/queries/products.getProductReport() errored')
+      return Promise.reject(error)
+    })
 }
 
 // clear existing conversion factor data

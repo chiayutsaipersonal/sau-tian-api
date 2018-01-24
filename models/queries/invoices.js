@@ -1,8 +1,11 @@
 // const fs = require('fs-extra')
+const moment = require('moment-timezone')
 const uuidV4 = require('uuid/v4')
 
 const db = require('../../controllers/database')
 const logging = require('../../controllers/logging')
+const checkExistence = require('./clients').checkExistence
+const rectifyString = require('./clients').rectifyString
 
 module.exports = {
   alignCustomSalesData,
@@ -13,9 +16,87 @@ module.exports = {
   getCustomSalesRecord,
   getLiveData,
   recordUpsert,
+  getInvoiceReport,
   // backupCustomSalesData,
   // getCustomSalesData,
   // getIrreleventCustomData,
+}
+
+// get report data in javascript object format
+function getInvoiceReport (startDate, endDate) {
+  return db.sequelize
+    .query(reportDataQueryString(startDate, endDate))
+    .spread((queryResults, meta) => {
+      return Promise.resolve(queryResults.map(entry => {
+        return {
+          distributorId: 400005,
+          clientId: rectifyString(checkExistence(entry.clientId)),
+          productId: rectifyString(checkExistence(entry.productId)),
+          date: moment(new Date(entry.date)).format('YYYYMMDD'),
+          currency: 'NTD',
+          invoiceValue: calculateInvoiceValue(entry),
+          quantity: entry._quantity === null ? entry.quantity : entry._quantity,
+          employeeId: checkExistence(entry.employeeId, '0001'),
+        }
+      }))
+    })
+    .then(rawReportData => Promise.resolve(rawReportData))
+    .catch(error => {
+      logging.error(error, './modules/queries/products.getInvoiceReport() errored')
+      return Promise.reject(error)
+    })
+}
+
+function calculateInvoiceValue (record) {
+  let unitPrice = record._unitPrice !== null ? record._unitPrice : record.unitPrice
+  let quantity = record._quantity !== null ? record._quantity : record.quantity
+  return unitPrice * quantity
+}
+
+// return live data query SQL string
+function reportDataQueryString (startDate, endDate) {
+  return `
+    SELECT invoices.date,
+      products.name AS productName,
+      sales.unitPrice,
+      sales.quantity,
+      invoices.employeeId,
+      products.unit,
+      clients.name AS companyName,
+      clients.areaId,
+      conversionFactors.conversionFactor,
+      invoices.id AS invoiceId,
+      clients.id AS clientId,
+      sales.id AS salesId,
+      products.id AS productId,
+      conversionFactors.id AS conversionFactorId,
+      products.sapId,
+      customSalesData.id AS customSalesDataId,
+      customSalesData._preserved,
+      customSalesData._clientId,
+      customSalesData._unitPrice,
+      customSalesData._quantity,
+      customSalesData._employeeId
+    FROM invoices
+      INNER JOIN
+      clients ON clients.id = invoices.clientId
+      INNER JOIN
+      sales ON sales.invoiceId = invoices.id
+      INNER JOIN
+      products ON products.id = sales.productId
+      INNER JOIN
+      conversionFactors ON conversionFactors.productId = products.id
+      LEFT JOIN
+      customSalesData ON (customSalesData.invoiceId = invoices.id) AND
+                        (customSalesData.clientId = invoices.clientId) AND
+                        (customSalesData.salesId = sales.id) AND
+                        (customSalesData.productId = sales.productId) AND
+                        (customSalesData.conversionFactorId = conversionFactors.id) AND
+                        (customSalesData.unitPrice = sales.unitPrice)
+    WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}' AND
+      (customSalesData._preserved = 1 OR
+      clients.areaId IS NOT NULL)
+    ORDER BY date, products.id;`
 }
 
 // remove any custom sales data records within a time period

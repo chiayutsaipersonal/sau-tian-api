@@ -1,38 +1,85 @@
+const archiver = require('archiver')
+const del = require('del')
 const express = require('express')
 const fs = require('fs-extra')
+const moment = require('moment-timezone')
 const Promise = require('bluebird')
 
 // const db = require('../controllers/database')
-// const logging = require('../controllers/logging')
+const logging = require('../controllers/logging')
 
 const clientQueries = require('../models/queries/clients')
+const productQueries = require('../models/queries/products')
+const invoiceQueries = require('../models/queries/invoices')
 
 const router = express.Router()
 
-const clientDataSequence = ['distributorId', 'id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax', 'type']
+const sequences = [
+  ['distributorId', 'id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax', 'type'],
+  ['distributorId', 'id', 'name', 'length', 'width', 'conversionFactor', 'unit', 'unitPrice', 'conversionFactorId', 'asp', 'stockQty'],
+  ['distributorId', 'clientId', 'productId', 'date', 'currency', 'invoiceValue', 'quantity', 'employeeId'],
+]
+
+let reportName = [
+  './data/2702_cust.txt',
+  './data/2702_sku.txt',
+  './data/2702_sale.txt',
+]
 
 router
-  // induce app server to reload live POS data
+  // generate text report files
   .get('/',
     (req, res, next) => {
-      let clientReportName = '2702_cust.txt'
-      // let productReportName = '2702_sku.txt'
-      // let invoiceReportName = '2702_sale.txt'
+      let dateRange = [req.query.startDate, req.query.endDate]
       let reportQueries = [
         clientQueries.getClientReport(),
+        productQueries.getProductReport(),
+        invoiceQueries.getInvoiceReport(...dateRange),
       ]
+      let archivePath = `./data/${moment(new Date()).format('YYYYMMDDHHmmss')}.zip`
       return Promise
-        .all(reportQueries)
-        .spread(clientData => {
-          let clientReportCvsData = generateTextData(clientData, clientDataSequence)
-          return Promise.all([
-            fs.outputFile(`./data/${clientReportName}`, clientReportCvsData),
-          ])
+        .each(reportQueries, (dataset, index) => {
+          let reportCvsData = generateTextData(dataset, sequences[index])
+          return fs.outputFile(reportName[index], reportCvsData)
         })
         .then(() => {
-          req.resJson = { message: 'done' }
-          next()
+          let output = fs.createWriteStream(archivePath)
+          let archive = archiver('zip', { zlib: { level: 9 } })
+          let archiveOperation = new Promise((resolve, reject) => {
+            output.on('finish', resolve)
+            archive.on('warning', error => {
+              logging.error(error, 'Compression operation encountered warnings')
+              return reject
+            })
+            archive.on('error', error => {
+              logging.error(error, 'Compression operation encountered errors')
+              return reject
+            })
+          })
+          archive.pipe(output)
+          archive.file('./data/2702_cust.txt', { name: '2702_cust.txt' })
+          archive.file('./data/2702_sku.txt', { name: '2702_sku.txt' })
+          archive.file('./data/2702_sale.txt', { name: '2702_sale.txt' })
+          archive.finalize()
+          return archiveOperation
+        })
+        .then(() => {
+          req.resFile = {
+            mimeType: 'zip',
+            filePath: archivePath,
+          }
           return Promise.resolve()
+        })
+        .then(() => {
+          return del(reportName)
+            .then(() => {
+              next()
+              return Promise.resolve()
+            })
+            .catch(error => {
+              logging.error(error, 'Intermediate files removal filure')
+              return Promise.reject(error)
+            })
         })
         .catch(error => next(error))
     }
