@@ -1,12 +1,9 @@
-const archiver = require('archiver')
-const del = require('del')
+
 const express = require('express')
 const fs = require('fs-extra')
-const moment = require('moment-timezone')
 const Promise = require('bluebird')
 
-// const db = require('../controllers/database')
-const logging = require('../controllers/logging')
+// const logging = require('../controllers/logging')
 
 const clientQueries = require('../models/queries/clients')
 const productQueries = require('../models/queries/products')
@@ -20,7 +17,7 @@ const sequences = [
   ['distributorId', 'clientId', 'productId', 'date', 'currency', 'invoiceValue', 'quantity', 'employeeId'],
 ]
 
-let reportName = [
+let reportNames = [
   './data/2702_cust.txt',
   './data/2702_sku.txt',
   './data/2702_sale.txt',
@@ -36,54 +33,16 @@ router
         productQueries.getProductReport(),
         invoiceQueries.getInvoiceReport(...dateRange),
       ]
-      let archivePath = `./data/${moment(new Date()).format('YYYYMMDDHHmmss')}.zip`
       return Promise
         .each(reportQueries, (dataset, index) => {
           let reportCvsData = generateTextData(dataset, sequences[index])
-          return fs.outputFile(reportName[index], reportCvsData)
-        })
-        .then(() => {
-          let output = fs.createWriteStream(archivePath)
-          let archive = archiver('zip', { zlib: { level: 9 } })
-          let archiveOperation = new Promise((resolve, reject) => {
-            output.on('finish', resolve)
-            archive.on('warning', error => {
-              logging.error(error, 'Compression operation encountered warnings')
-              return reject
-            })
-            archive.on('error', error => {
-              logging.error(error, 'Compression operation encountered errors')
-              return reject
-            })
-          })
-          archive.pipe(output)
-          archive.file('./data/2702_cust.txt', { name: '2702_cust.txt' })
-          archive.file('./data/2702_sku.txt', { name: '2702_sku.txt' })
-          archive.file('./data/2702_sale.txt', { name: '2702_sale.txt' })
-          archive.finalize()
-          return archiveOperation
-        })
-        .then(() => {
-          req.resFile = {
-            mimeType: 'zip',
-            filePath: archivePath,
-          }
+          return fs.outputFile(reportNames[index], reportCvsData)
+        }).then(() => {
+          req.resJson = { message: 'done' }
+          next()
           return Promise.resolve()
-        })
-        .then(() => {
-          return del(reportName)
-            .then(() => {
-              next()
-              return Promise.resolve()
-            })
-            .catch(error => {
-              logging.error(error, 'Intermediate files removal filure')
-              return Promise.reject(error)
-            })
-        })
-        .catch(error => next(error))
-    }
-  )
+        }).catch(error => next(error))
+    })
 
 module.exports = router
 
