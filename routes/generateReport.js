@@ -1,9 +1,10 @@
 
+const archiver = require('archiver')
 const express = require('express')
 const fs = require('fs-extra')
 const Promise = require('bluebird')
 
-// const logging = require('../controllers/logging')
+const logging = require('../controllers/logging')
 
 const clientQueries = require('../models/queries/clients')
 const productQueries = require('../models/queries/products')
@@ -17,14 +18,51 @@ const sequences = [
   ['distributorId', 'clientId', 'productId', 'date', 'currency', 'invoiceValue', 'quantity', 'employeeId'],
 ]
 
-let reportNames = [
-  './data/2702_cust.txt',
-  './data/2702_sku.txt',
-  './data/2702_sale.txt',
+// streaming version
+const reportNames = [
+  '2702_cust.txt',
+  '2702_sku.txt',
+  '2702_sale.txt',
 ]
 
 router
-  // generate text report files
+  // // generate text report files (static download version)
+  // .get('/',
+  //   (req, res, next) => {
+  //     let dateRange = [req.query.startDate, req.query.endDate]
+  //     let reportQueries = [
+  //       clientQueries.getClientReport(),
+  //       productQueries.getProductReport(),
+  //       invoiceQueries.getInvoiceReport(...dateRange),
+  //     ]
+  //     let output = fs.createWriteStream('./data/reports.zip')
+  //     let archive = archiver('zip')
+  //     return Promise
+  //       .each(reportQueries, (dataset, index) => {
+  //         archive.append(generateTextData(dataset, sequences[index]), { name: reportNames[index] })
+  //         return Promise.resolve()
+  //       }).then(() => {
+  //         let eventListener = new Promise((resolve, reject) => {
+  //           archive.on('warning', error => {
+  //             logging.error(error, 'Warning encountered during archiving operations')
+  //             reject(error)
+  //           })
+  //           archive.on('error', error => {
+  //             logging.error(error, 'Error encountered during archiving operations')
+  //             reject(error)
+  //           })
+  //           output.on('finish', resolve)
+  //         })
+  //         archive.pipe(output)
+  //         archive.finalize()
+  //         return eventListener
+  //       }).then(() => {
+  //         req.resJson = { message: 'done' }
+  //         next()
+  //         return Promise.resolve()
+  //       }).catch(error => next(error))
+  //   })
+  // stream version (doesn't work)
   .get('/',
     (req, res, next) => {
       let dateRange = [req.query.startDate, req.query.endDate]
@@ -33,13 +71,27 @@ router
         productQueries.getProductReport(),
         invoiceQueries.getInvoiceReport(...dateRange),
       ]
+      let archive = archiver('zip')
       return Promise
         .each(reportQueries, (dataset, index) => {
-          let reportCvsData = generateTextData(dataset, sequences[index])
-          return fs.outputFile(reportNames[index], reportCvsData)
+          archive.append(generateTextData(dataset, sequences[index]), { name: reportNames[index] })
+          return Promise.resolve()
         }).then(() => {
-          req.resJson = { message: 'done' }
-          next()
+          let eventListener = new Promise((resolve, reject) => {
+            archive.on('warning', error => {
+              logging.error(error, 'Warning encountered during archiving operations')
+              return reject(error)
+            })
+            archive.on('error', error => {
+              logging.error(error, 'Error encountered during archiving operations')
+              return reject(error)
+            })
+            archive.on('end', () => resolve)
+          })
+          archive.pipe(res)
+          archive.finalize()
+          return eventListener
+        }).then(() => {
           return Promise.resolve()
         }).catch(error => next(error))
     })

@@ -157,6 +157,7 @@ function template (req, res, next) {
 function error (error, req, res, next) {
   logging.warning('Global error handler invoked')
   logging.error(error)
+  if (error.status) res.status(error.status)
   res.status(res.statusCode >= 400 ? res.statusCode : 500)
   let resJson = {
     method: req.method.toLowerCase(),

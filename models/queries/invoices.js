@@ -27,6 +27,11 @@ function getInvoiceReport (startDate, endDate) {
   return db.sequelize
     .query(reportDataQueryString(startDate, endDate))
     .spread((queryResults, meta) => {
+      if (queryResults.length === 0) {
+        let error = new Error('Invoice data query returned no results')
+        error.status = 503
+        return Promise.reject(error)
+      }
       return Promise.resolve(queryResults.map(entry => {
         return {
           distributorId: 400005,
