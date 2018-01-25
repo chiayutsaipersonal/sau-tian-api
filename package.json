@@ -1,7 +1,11 @@
 {
   "name": "sau-tian-api",
-  "version": "0.0.1",
+  "version": "0.9.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chiayutsaipersonal/sau-tian-api.git"
+  },
   "dependencies": {
     "archiver": "^2.1.1",
     "bluebird": "^3.5.1",
@@ -43,8 +47,8 @@
   },
   "scripts": {
     "lint": "eslint *.js --fix",
-    "start": "npm run dev",
     "prod": "cross-env NODE_ENV=production node ./server.js",
-    "dev": "cross-env NODE_ENV=development nodemon ./server.js"
+    "dev": "cross-env NODE_ENV=development nodemon ./server.js",
+    "start": "npm run dev"
   }
 }
