@@ -1,7 +1,6 @@
 
 const archiver = require('archiver')
 const express = require('express')
-const fs = require('fs-extra')
 const Promise = require('bluebird')
 
 const logging = require('../controllers/logging')
