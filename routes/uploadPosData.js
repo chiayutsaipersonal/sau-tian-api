@@ -24,7 +24,7 @@ router
     (req, res, next) => {
       return Promise.each(req.files, file => {
         return fs
-          .move(file.path, path.join(file.destination, file.originalname, { overwrite: true }))
+          .move(file.path, path.join(file.destination, file.originalname), { overwrite: true })
           .then(() => {
             logging.warning(`${file.originalname} is uploaded`)
             return Promise.resolve()
