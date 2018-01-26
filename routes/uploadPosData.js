@@ -30,7 +30,7 @@ router
             return Promise.resolve()
           })
           .catch(error => {
-            logging(error, `${file.originalname} upload failure`)
+            logging.error(error, `${file.originalname} upload failure`)
             return Promise.reject(error)
           })
       }).then(() => {
