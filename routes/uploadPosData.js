@@ -1,5 +1,4 @@
 
-const del = require('del')
 const express = require('express')
 const fs = require('fs-extra')
 const path = require('path')
