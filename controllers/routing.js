@@ -2,7 +2,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const express = require('express')
 const favicon = require('serve-favicon')
-const logger = require('morgan')
+const morgan = require('morgan')
 const path = require('path')
 
 const logging = require('../controllers/logging')
@@ -37,20 +37,22 @@ module.exports = app => {
 
 function setupPreRoutingMiddlewares (app) {
   logging.console('Loading pre-routing global middlewares')
-  if (eVars.NODE_ENV === 'production') app.use(favicon(path.resolve('./dist/static/favicon.ico')))
-  // if (eVars.NODE_ENV === 'production') app.use(favicon(path.join(__dirname, 'dist', 'static', 'favicon.ico')))
-  // if (eVars.NODE_ENV === 'production') app.use(favicon(path.join(__dirname, 'dist', 'public', 'favicon.ico')))
-  app.use(logger('dev'))
-  if (eVars.NODE_ENV === 'development') {
-    // app.use(logger('dev'))
-    app.use(cors())
+  if (eVars.NODE_ENV === 'production') {
+    app.use('trust proxy', true)
+    app.use(favicon(path.resolve('./dist/static/favicon.ico')))
   }
+  if (eVars.NODE_ENV === 'development') app.use(cors())
+  app.use(morgan('dev'), {
+    skip: (req, res) => { return res.statusCode < 400 },
+    stream: process.stderr,
+  })
+  app.use(morgan('dev'), {
+    skip: (req, res) => { return res.statusCode >= 400 },
+    stream: process.stdout,
+  })
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use('/sauTian', express.static(path.resolve('./dist'))) // serve static assets
-  // app.use(express.static(path.resolve('./dist/static'))) // serve static assets
-  // app.use(express.static(path.join(__dirname, 'dist', 'static'))) // serve static assets
-  // app.use(express.static(path.join(__dirname, 'dist', 'public'))) // serve static assets
   apiRouter.use(rejectApiCallsBeforeReady) // serve static assets
   return Promise.resolve()
 }
