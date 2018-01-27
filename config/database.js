@@ -7,7 +7,7 @@ const logging = require('../controllers/logging')
 // settings
 const ormVerbose = false
 
-const sqlite = {
+module.exports = {
   dialect: 'sqlite',
   storage: path.resolve(`./data/${appConfig.reference}.db`),
   database: appConfig.reference,
@@ -23,5 +23,3 @@ const sqlite = {
   },
   operatorsAliases: false,
 }
-
-module.exports = sqlite
