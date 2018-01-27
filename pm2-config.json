@@ -1,8 +1,0 @@
-{
-  "name": "sauTian",
-  "script": "server.js",
-  "port": 9003,
-  "env": {
-    "NODE_ENV": "production"
-  }
-}
