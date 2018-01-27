@@ -41,12 +41,14 @@ function setupPreRoutingMiddlewares (app) {
     app.use('trust proxy', true)
     app.use(favicon(path.resolve('./dist/static/favicon.ico')))
   }
-  if (eVars.NODE_ENV === 'development') app.use(cors())
-  app.use(morgan('dev'), {
+  if (eVars.NODE_ENV === 'development') {
+    app.use(cors())
+  }
+  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev'), {
     skip: (req, res) => { return res.statusCode < 400 },
     stream: process.stderr,
   })
-  app.use(morgan('dev'), {
+  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev'), {
     skip: (req, res) => { return res.statusCode >= 400 },
     stream: process.stdout,
   })
