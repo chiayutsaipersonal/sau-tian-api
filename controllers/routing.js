@@ -45,11 +45,11 @@ function setupPreRoutingMiddlewares (app) {
     app.use(cors())
   }
   app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev', {
-    skip: (req, res) => { return res.statusCode < 400 },
+    skip: (req, res) => res.statusCode < 400,
     stream: process.stderr,
   }))
   app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev', {
-    skip: (req, res) => { return res.statusCode >= 400 },
+    skip: (req, res) => res.statusCode >= 400,
     stream: process.stdout,
   }))
   app.use(bodyParser.json())
