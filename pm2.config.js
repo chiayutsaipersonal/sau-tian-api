@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'sau-tian-api',
-    script: 'server.js',
+    script: '~/projects/sau-tian-api/server.js',
     port: 9003,
   }],
 }
