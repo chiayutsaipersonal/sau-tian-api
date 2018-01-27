@@ -38,7 +38,6 @@ module.exports = app => {
 function setupPreRoutingMiddlewares (app) {
   logging.console('Loading pre-routing global middlewares')
   if (eVars.NODE_ENV === 'production') {
-    app.set('trust proxy', true)
     app.use(favicon(path.resolve('./dist/static/favicon.ico')))
   }
   if (eVars.NODE_ENV === 'development') app.use(cors())

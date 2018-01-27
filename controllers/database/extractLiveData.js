@@ -1,5 +1,4 @@
 const DbfParser = require('node-dbf-iconv')
-const fs = require('fs-extra')
 const path = require('path')
 const Promise = require('bluebird')
 
@@ -8,8 +7,6 @@ const logging = require('../../controllers/logging')
 const eVars = require('../../config/app').eVars
 
 const location = eVars.LIVE_DATA_LOCATION
-const convFactorLocation = path.resolve('./data/conversionFactors.json')
-const customSalesDataLocation = path.resolve('./data/customSalesData.json')
 
 module.exports = () => {
   let data = {
@@ -28,18 +25,10 @@ module.exports = () => {
     sales: createParser(path.join(location, 'saldet.DBF'), 'big5'),
   }
 
-  parsers.clients.on('record', record => {
-    recordClientData(record, data.clients)
-  })
-  parsers.products.on('record', record => {
-    recordProductData(record, data.products)
-  })
-  parsers.invoices.on('record', record => {
-    recordInvoiceData(record, data.invoices)
-  })
-  parsers.sales.on('record', record => {
-    recordSalesData(record, data.sales)
-  })
+  parsers.clients.on('record', record => { recordClientData(record, data.clients) })
+  parsers.products.on('record', record => { recordProductData(record, data.products) })
+  parsers.invoices.on('record', record => { recordInvoiceData(record, data.invoices) })
+  parsers.sales.on('record', record => { recordSalesData(record, data.sales) })
 
   let endEventHandles = {
     clients: getEndEventHandle(parsers.clients),
@@ -59,53 +48,6 @@ module.exports = () => {
       endEventHandles.invoices,
       endEventHandles.sales,
     ])
-    // .then(() => {
-    //   return fs
-    //     .readJSON(convFactorLocation)
-    //     .then(recordset => {
-    //       if (Array.isArray(recordset)) {
-    //         recordset.forEach(record => {
-    //           data.conversionFactors.push({
-    //             id: record.id,
-    //             productId: record.productId,
-    //             conversionFactor: parseFloat(record.conversionFactor),
-    //           })
-    //         })
-    //       }
-    //       return Promise.resolve()
-    //     }).catch(error => {
-    //       logging.error(error, 'conversionFactors.json data extraction failure')
-    //       return Promise.reject(error)
-    //     })
-    // })
-    // .then(() => {
-    //   return fs
-    //     .readJSON(customSalesDataLocation)
-    //     .then(recordset => {
-    //       if (Array.isArray(recordset)) {
-    //         recordset.forEach(record => {
-    //           data.customSalesData.push({
-    //             id: record.id,
-    //             invoiceId: record.invoiceId,
-    //             clientId: record.clientId,
-    //             salesId: record.salesId,
-    //             productId: record.productId,
-    //             conversionFactorId: record.conversionFactorId,
-    //             unitPrice: record.unitPrice ? parseFloat(record.unitPrice) : null,
-    //             _preserved: record._preserved,
-    //             _clientId: record._clientId,
-    //             _unitPrice: record._unitPrice ? parseFloat(record._unitPrice) : null,
-    //             _quantity: record._quantity ? parseFloat(record._quantity) : null,
-    //             _employeeId: record._employeeId,
-    //           })
-    //         })
-    //       }
-    //       return Promise.resolve()
-    //     }).catch(error => {
-    //       logging.error(error, 'conversionFactors.json data extraction failure')
-    //       return Promise.reject(error)
-    //     })
-    // })
     .then(() => {
       logging.console('Live data extracted')
       return Promise.resolve(data)

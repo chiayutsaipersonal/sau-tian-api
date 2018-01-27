@@ -62,7 +62,7 @@ module.exports = (db, liveData) => {
     // })
     return Promise.resolve()
   }).then(() => {
-    // for reloading data from './data/conversionFactors.json'
+    // // for reloading data from './data/conversionFactors.json'
     // return db.ConversionFactors
     //   .destroy({ where: {} })
     //   .then(() => {

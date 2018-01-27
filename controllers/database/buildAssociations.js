@@ -3,24 +3,6 @@ const logging = require('../logging')
 module.exports = db => {
   logging.console('Assign ORM table relationships')
 
-  // db.Products.hasOne(db.ConversionFactors, {
-  //   constraints: true,
-  //   onUpdate: 'CASCADE',
-  //   onDelete: 'RESTRICT',
-  // }, {
-  //   foreignKey: 'productId',
-  //   targetKey: 'id',
-  // })
-
-  // db.ConversionFactors.belongsTo(db.Products, {
-  //   constraints: true,
-  //   onUpdate: 'CASCADE',
-  //   onDelete: 'RESTRICT',
-  // }, {
-  //   foreignKey: 'productId',
-  //   targetKey: 'id',
-  // })
-
   db.Products.belongsToMany(db.Invoices, {
     constraints: true,
     onUpdate: 'CASCADE',
@@ -63,17 +45,3 @@ module.exports = db => {
     targetKey: 'id',
   })
 }
-
-// function injectOptions (foreignKey, targetKey, throughModel = null, otherKey = null, constraints = true) {
-//   return Object.assign({
-//     constraints: constraints,
-//     onUpdate: 'CASCADE',
-//     onDelete: 'RESTRICT',
-//   }, {
-//     foreignKey: foreignKey,
-//     targetKey: targetKey,
-//   },
-//   throughModel === null ? {} : { through: throughModel },
-//   otherKey === null ? {} : { otherKey: otherKey }
-//   )
-// }

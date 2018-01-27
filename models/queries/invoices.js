@@ -1,4 +1,3 @@
-// const fs = require('fs-extra')
 const moment = require('moment-timezone')
 const uuidV4 = require('uuid/v4')
 
@@ -17,9 +16,6 @@ module.exports = {
   getLiveData,
   recordUpsert,
   getInvoiceReport,
-  // backupCustomSalesData,
-  // getCustomSalesData,
-  // getIrreleventCustomData,
 }
 
 // get report data in javascript object format
@@ -275,82 +271,3 @@ function recordUpsert (recordData) {
       return Promise.reject(error)
     })
 }
-
-// // backup custom invoice data
-// function backupCustomSalesData (data) {
-//   return db.CustomSalesData
-//     .findAll()
-//     .then(data => fs.outputJson('./data/customSalesData.json', data))
-//     .then(() => Promise.resolve())
-//     .catch(error => {
-//       logging.error(error, 'modules/queries/invoices.backupCustomInvoiceData() errored')
-//       return Promise.reject(error)
-//     })
-// }
-
-// // get full dataset from customSalesData table
-// function getCustomSalesData () {
-//   return db.CustomSalesData
-//     .findAll()
-// }
-
-// // get custom invoice data that's outside of the specified date range
-// function getIrreleventCustomData (startDate, endDate) {
-//   let query = `
-//     SELECT customSalesData.*
-//     FROM customSalesData
-//     INNER JOIN invoices ON customSalesData.invoiceId = invoices.id
-//     WHERE invoices.date NOT BETWEEN '${startDate}' AND '${endDate}';`
-//   return db.sequelize
-//     .query(query)
-//     .spread((data, meta) => Promise.resolve(data))
-//     .catch(error => {
-//       logging.error(error, 'modules/queries/invoices.getIrreleventCustomData() errored')
-//       return Promise.reject(error)
-//     })
-// }
-
-// // return live data query SQL string
-// function liveDataQueryString (startDate, endDate) {
-//   return `
-//     SELECT invoices.date,
-//           products.name AS productName,
-//           sales.unitPrice,
-//           sales.quantity,
-//           invoices.employeeId,
-//           products.unit,
-//           clients.name AS companyName,
-//           clients.areaId,
-//           conversionFactors.conversionFactor,
-//           invoices.id AS invoiceId,
-//           clients.id AS clientId,
-//           sales.id AS salesId,
-//           products.id AS productId,
-//           conversionFactors.id AS conversionFactorId,
-//           products.sapId,
-//           customSalesData.id AS customSalesDataId,
-//           customSalesData._preserved,
-//           customSalesData._clientId,
-//           customSalesData._unitPrice,
-//           customSalesData._quantity,
-//           customSalesData._employeeId
-//     FROM invoices
-//         INNER JOIN
-//         clients ON clients.id = invoices.clientId
-//         INNER JOIN
-//         sales ON sales.invoiceId = invoices.id
-//         INNER JOIN
-//         products ON products.id = sales.productId
-//         INNER JOIN
-//         conversionFactors ON conversionFactors.productId = products.id
-//         LEFT JOIN
-//         customSalesData ON (customSalesData.invoiceId = invoices.id) AND
-//                             (customSalesData.clientId = invoices.clientId) AND
-//                             (customSalesData.salesId = sales.id) AND
-//                             (customSalesData.productId = sales.productId) AND
-//                             (customSalesData.conversionFactorId = conversionFactors.id) AND
-//                             (customSalesData.unitPrice = sales.unitPrice)
-//     WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}'
-//     ORDER BY products.id,
-//             date;`
-// }

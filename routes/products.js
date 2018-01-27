@@ -53,9 +53,6 @@ router
     (req, res, next) => {
       return productQueries
         .removeConvFactorInfo(req.params.productId)
-      // .then(() => {
-      //   return productQueries.backupConvFactorData()
-      // })
         .then(() => {
           req.resJson = { message: 'Conversion factor cleared...' }
           next()
@@ -68,7 +65,6 @@ router
     (req, res, next) => {
       return productQueries
         .insertConversionFactor(req.body)
-      // .then(() => productQueries.backupConvFactorData())
         .then(() => {
           req.resJson = { message: 'Conversion factor information updated' }
           next()

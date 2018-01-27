@@ -17,7 +17,8 @@ const eVars = appConfig.eVars
 
 logging.warning('Initialize Express.js Framework')
 let app = express()
-app.set('port', appConfig.hosting.port)
+app.set('port', appConfig.port)
+app.set('trust proxy', true)
 let server = http.createServer(app) // Create HTTP server
 
 logging.warning('initialize essential system components - pre-startup')
@@ -36,7 +37,7 @@ Promise
     })
   .then(() => {
     logging.warning('Start server')
-    server.listen(appConfig.hosting.port)
+    server.listen(appConfig.port)
     return Promise.resolve()
   })
   .then(() => {
@@ -50,10 +51,10 @@ Promise
       if (error.syscall !== 'listen') throw error
       switch (error.code) {
         case 'EACCES':
-          logging.error(`${appConfig.hosting.port} requires elevated privileges`)
+          logging.error(`${appConfig.port} requires elevated privileges`)
           process.exit(1)
         case 'EADDRINUSE':
-          logging.error(`${appConfig.hosting.port} is already in use`)
+          logging.error(`${appConfig.port} is already in use`)
           process.exit(1)
         default: throw error
       }

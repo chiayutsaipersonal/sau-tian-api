@@ -1,19 +1,17 @@
-const dotEnv = require('dotenv')
+require('dotenv').config()
 const fs = require('fs-extra')
 const path = require('path')
 const Promise = require('bluebird')
 
 const logging = require('../logging')
 
-dotEnv.config()
-const eVars = process.env
+const location = process.env.LIVE_DATA_LOCATION
 
 const liveDataFiles = [
-  path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'customer.DBF'),
-  path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'item.DBF'),
-  path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'sal.DBF'),
-  path.join(path.resolve(eVars.LIVE_DATA_LOCATION), 'saldet.DBF'),
-  // path.resolve('./data/conversionFactors.json'),
+  path.join(path.resolve(location), 'customer.DBF'),
+  path.join(path.resolve(location), 'item.DBF'),
+  path.join(path.resolve(location), 'sal.DBF'),
+  path.join(path.resolve(location), 'saldet.DBF'),
 ]
 
 module.exports = () => {

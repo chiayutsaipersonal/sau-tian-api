@@ -25,43 +25,6 @@ const reportNames = [
 ]
 
 router
-  // // generate text report files (static download version)
-  // .get('/',
-  //   (req, res, next) => {
-  //     let dateRange = [req.query.startDate, req.query.endDate]
-  //     let reportQueries = [
-  //       clientQueries.getClientReport(),
-  //       productQueries.getProductReport(),
-  //       invoiceQueries.getInvoiceReport(...dateRange),
-  //     ]
-  //     let output = fs.createWriteStream('./data/reports.zip')
-  //     let archive = archiver('zip')
-  //     return Promise
-  //       .each(reportQueries, (dataset, index) => {
-  //         archive.append(generateTextData(dataset, sequences[index]), { name: reportNames[index] })
-  //         return Promise.resolve()
-  //       }).then(() => {
-  //         let eventListener = new Promise((resolve, reject) => {
-  //           archive.on('warning', error => {
-  //             logging.error(error, 'Warning encountered during archiving operations')
-  //             reject(error)
-  //           })
-  //           archive.on('error', error => {
-  //             logging.error(error, 'Error encountered during archiving operations')
-  //             reject(error)
-  //           })
-  //           output.on('finish', resolve)
-  //         })
-  //         archive.pipe(output)
-  //         archive.finalize()
-  //         return eventListener
-  //       }).then(() => {
-  //         req.resJson = { message: 'done' }
-  //         next()
-  //         return Promise.resolve()
-  //       }).catch(error => next(error))
-  //   })
-  // stream version (doesn't work)
   .get('/',
     (req, res, next) => {
       let dateRange = [req.query.startDate, req.query.endDate]

@@ -1,12 +1,9 @@
-const path = require('path')
-
 require('dotenv').config()
+const path = require('path')
 
 const logging = require('../controllers/logging')
 
-const protocol = require('../config/app').hosting.protocol
-const domain = require('../config/app').hosting.domain
-const port = require('../config/app').hosting.port
+const hostUrl = require('../config/app').hostUrl
 
 const cannedMessage = {
   200: '200 OK',
@@ -28,7 +25,6 @@ module.exports = {
   image,
   json,
   redirect,
-  // stream: null, // not implemented
   template,
   error,
 }
@@ -43,15 +39,6 @@ function redirect (req, res, next) {
     return next()
   }
 }
-
-// not implemented yet
-// function streamResponse (args) {
-//   args.res
-//     .status(args.statusCode)
-//     .type(args.mimeType)
-//     .attachment(args.fileName)
-//   return args.stream.pipe(args.res)
-// }
 
 /*
 sends a file response
@@ -104,7 +91,7 @@ req.resJson = {
 function json (req, res, next) {
   if (!('resJson' in req)) return next()
   req.resJson.method = req.method.toLowerCase()
-  req.resJson.endpoint = `${protocol}://${domain}:${port}${req.originalUrl}`
+  req.resJson.endpoint = `${hostUrl}${req.originalUrl}`
   req.resJson.statusCode = res.statusCode
   if (!('message' in req.resJson)) {
     req.resJson.message = cannedMessage[res.statusCode.toString()]
@@ -155,13 +142,13 @@ function template (req, res, next) {
 
 // router specific global error handler
 function error (error, req, res, next) {
-  logging.warning('Global error handler invoked')
+  logging.warning('Global API error handler invoked')
   logging.error(error)
   if (error.status) res.status(error.status)
   res.status(res.statusCode >= 400 ? res.statusCode : 500)
   let resJson = {
     method: req.method.toLowerCase(),
-    endpoint: `${protocol}://${domain}:${port}${req.originalUrl}`,
+    endpoint: `${hostUrl}${req.originalUrl}`,
     message: 'customMessage' in error
       ? error.customMessage
       : cannedMessage[res.statusCode.toString()],

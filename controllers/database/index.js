@@ -33,7 +33,6 @@ function hydrateWorkingData () {
 function initialize () {
   return sequelize
     .authenticate()
-    // .then(() => verifyLiveDataSource())
     .then(() => dropSchemas())
     .then(() => registerModels(db))
     .then(() => syncModels())
@@ -41,9 +40,6 @@ function initialize () {
     .then(() => syncModels())
     .then(() => {
       db.ready = false
-      return Promise.resolve()
-    })
-    .then(() => {
       return Promise.resolve()
     })
     .then(() => Promise.resolve(`${dbConfig.dialect} database structure initialized...`))
