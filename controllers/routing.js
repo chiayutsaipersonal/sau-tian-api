@@ -44,14 +44,14 @@ function setupPreRoutingMiddlewares (app) {
   if (eVars.NODE_ENV === 'development') {
     app.use(cors())
   }
-  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev'), {
+  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev', {
     skip: (req, res) => { return res.statusCode < 400 },
     stream: process.stderr,
-  })
-  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev'), {
+  }))
+  app.use(morgan(eVars.NODE_ENV === 'production' ? 'combined' : 'dev', {
     skip: (req, res) => { return res.statusCode >= 400 },
     stream: process.stdout,
-  })
+  }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use('/sauTian', express.static(path.resolve('./dist'))) // serve static assets
