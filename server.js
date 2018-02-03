@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // load npm modules
 const express = require('express')
 const http = require('http')

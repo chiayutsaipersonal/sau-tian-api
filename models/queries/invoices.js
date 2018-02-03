@@ -37,7 +37,8 @@ function getInvoiceReport (startDate, endDate) {
           currency: 'NTD',
           invoiceValue: calculateInvoiceValue(entry),
           quantity: entry._quantity === null ? entry.quantity : entry._quantity,
-          employeeId: checkExistence(entry.employeeId, '0001'),
+          // employeeId: checkExistence(entry.employeeId, '0001'),
+          employeeId: '0002', // setting according to client demands
         }
       }))
     })

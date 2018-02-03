@@ -44,7 +44,7 @@ function getProductReport () {
           unit: rectifyString(checkExistence(entry.unit, 'unspecified unit')),
           unitPrice: entry.unitPrice,
           conversionFactorId: entry.conversionFactorId,
-          asp: null,
+          asp: entry.asp,
           stockQty: checkExistence(entry.stockQty, 0),
         }
       }))

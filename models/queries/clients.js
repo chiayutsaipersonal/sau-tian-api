@@ -14,7 +14,7 @@ module.exports = {
 
 function getClientReport () {
   let queryOptions = {
-    attributes: ['id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax'],
+    attributes: ['id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax', 'type'],
     where: { areaId: { [between]: [1, 4] } },
     order: ['id'],
   }
@@ -37,7 +37,7 @@ function getClientReport () {
           address: rectifyString(checkExistence(entry.address, 'Empty Address')),
           telephone: rectifyString(entry.telephone),
           fax: rectifyString(entry.fax),
-          type: null,
+          type: entry.type,
         }
       }))
     })

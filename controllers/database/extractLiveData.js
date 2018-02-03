@@ -74,18 +74,25 @@ function recordClientData (record, clientRecords) {
       address: record.COMPADDR.trim() === '' ? null : record.COMPADDR.toString(),
       telephone: record.TEL1.trim() === '' ? null : record.TEL1.toString(),
       fax: record.FAX.trim() === '' ? null : record.FAX.toString(),
+      // find if in CUSTUD2 field any words that matches 'rebate', then set this to 'R'
+      // to represent this is a rebate client
+      type: record.CUSTUD2.toString().toLowerCase().search('rebate') >= 0
+        ? 'R'
+        : null,
     })
   }
 }
 
-function recordProductData (record, invoiceRecords) {
+function recordProductData (record, productRecords) {
+  // console.log(record.)
   if (!record['@deleted']) {
-    invoiceRecords.push({
+    productRecords.push({
       id: record.ITEMNO,
       sapId: record.SITEMNO.trim() === '' ? null : record.SITEMNO.toString(),
       name: record.ITEMNAME.trim() === '' ? null : record.ITEMNAME.toString(),
       stockQty: isNaN(record.STOCKQTY) ? null : parseInt(record.STOCKQTY),
       unit: record.STKUNIT.trim() === '' ? null : record.STKUNIT.toString(),
+      asp: isNaN(record.STKCOSTPC) ? null : record.STKCOSTPC,
     })
   }
 }
