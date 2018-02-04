@@ -6,6 +6,7 @@ const between = db.Sequelize.Op.between
 module.exports = {
   getClients,
   getClientReport,
+  getMonthlyPatrons,
   getSimpleClientList,
   recordCount,
   checkExistence,
@@ -19,7 +20,7 @@ function getClientReport () {
     order: ['id'],
   }
   return db.Clients
-    .findAll(queryOptions, { logging: console.log })
+    .findAll(queryOptions)
     .then(queryResults => {
       if (queryResults.length === 0) {
         let error = new Error('Client data query returned no results')
@@ -64,9 +65,7 @@ function rectifyString (string) {
 // server-side pagination if specified
 function getClients (limit = null, offset = null) {
   let options = {
-    where: {
-      areaId: { [between]: [1, 4] },
-    },
+    where: { areaId: { [between]: [1, 4] } },
     order: ['id'],
   }
   if ((limit !== null) && (offset !== null)) {
@@ -82,11 +81,10 @@ function getClients (limit = null, offset = null) {
     })
 }
 
+// get a minimum list of clients in the sales areas 1~4
 function getSimpleClientList () {
   let options = {
-    where: {
-      areaId: { [between]: [1, 4] },
-    },
+    where: { areaId: { [between]: [1, 4] } },
     attributes: ['id', 'name', 'areaId'],
     order: ['areaId', 'id'],
   }
@@ -95,6 +93,18 @@ function getSimpleClientList () {
     .then(data => Promise.resolve(data))
     .catch(error => {
       logging.error(error, './modules/queries/products.getSimpleClientList() errored')
+      return Promise.reject(error)
+    })
+}
+
+// get a list clients that had made purchases between a time duration
+function getMonthlyPatrons (startDate, endDate) {
+  let queryString = `SELECT DISTINCT clients.id, clients.name FROM invoices INNER JOIN sales ON invoices.id = sales.invoiceId INNER JOIN products ON sales.productId = products.id INNER JOIN conversionFactors ON products.id = conversionFactors.productId INNER JOIN clients ON invoices.clientId = clients.id WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}' ORDER BY clients.id;`
+  return db.sequelize
+    .query(queryString)
+    .spread((data, meta) => Promise.resolve(data))
+    .catch(error => {
+      logging.error(error, './modules/queries/products.getMonthlyPatrons() errored')
       return Promise.reject(error)
     })
 }
