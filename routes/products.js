@@ -76,8 +76,8 @@ router
         })
     }
   )
-  // receive and process a excel file of conversion factor data
-  // all prior conversion factor data are saved to .json and wiped
+  // receive and process an excel file of conversion factor data
+  // all prior conversion factor data are saved to .json and wiped from database
   .post('/upload',
     multer.single('conversionFactors'),
     (req, res, next) => {
@@ -98,6 +98,30 @@ router
         .then(() => fs.remove(req.file.path))
         .then(() => {
           req.resJson = { message: 'Conversion factor information uploaded' }
+          next()
+          return Promise.resolve()
+        })
+        .catch(error => next(error))
+    })
+  // receive and process an excel file of custom stock quantity data
+  // all prior stock quantity data are saved to .json and wiped from database
+  .post('/uploadStock',
+    multer.single('customStockQuantities'),
+    (req, res, next) => {
+      let convertedData = JSON.stringify(convertExcel({
+        sourceFile: req.file.path,
+        header: { rows: 1 },
+        columnToKey: {
+          A: 'id',
+          B: 'productId',
+          C: 'customStockQty',
+        },
+        sheets: ['customStockQuantities'],
+      }).customStockQuantities)
+      return productQueries.batchSequentialUpdate(convertedData)
+        .then(() => fs.remove(req.file.path))
+        .then(() => {
+          req.resJson = { message: 'Custom stock quantity information uploaded' }
           next()
           return Promise.resolve()
         })

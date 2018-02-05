@@ -13,7 +13,8 @@ module.exports = {
   findDuplicates,
   getProduct,
   getProducts,
-  batchSequentialInsert,
+  batchSequentialInsert, // conversion factor
+  batchSequentialUpdate, // custom stock q'ty
   insertProduct,
   insertConversionFactor,
   recordCount,
@@ -102,6 +103,36 @@ function batchSequentialInsert (data) {
   })
 }
 
+// batch update 'customStockQty' field of conversionFactors table sequentially
+// only entries that matches both 'id' and 'productId'
+// are updated, omitted otherwise
+function batchSequentialUpdate (data) {
+  return db.ConversionFactors
+    .update(
+      { customStockQty: null },
+      { where: {} }
+    ).then(() => {
+      let convertedData = JSON.parse(data)
+      return Promise.each(convertedData, entry => {
+        let id = entry.id
+        let productId = entry.productId
+        let customStockQty = entry.customStockQty
+        return db.sequelize
+          .query(`UPDATE conversionFactors SET customStockQty = ${customStockQty} WHERE id = '${id}' AND productId = '${productId}';`)
+          // .spread((result, meta) => {
+          //   console.log(result)
+          //   return Promise.resolve()
+          // })
+          .catch(error => Promise.reject(error))
+      })
+    }).then(() => {
+      return Promise.resolve()
+    }).catch(error => {
+      logging.error(error, './modules/queries/products.batchSequentialInsert() errored')
+      return Promise.reject(error)
+    })
+}
+
 // insert a conversion factor record
 // all related records are removed before hand
 // e.g. same productId or same conversion factor Id
@@ -128,7 +159,7 @@ function backupConvFactorData () {
   let timeString = moment.tz().format('YYYYMMDDHHmmss')
   let location = path.resolve(`./data/conversionFactors.${timeString}.json`)
   return db.ConversionFactors
-    .findAll()
+    .findAll({ attributes: { exclude: ['customStockQty'] } })
     .then(data => fs.outputJson(location, data))
     .catch(error => {
       logging.error(error, './modules/queries/products.backupConvFactorData() errored')
@@ -164,7 +195,7 @@ function getProduct (productId) {
 // get product listing ordered by productId, and does
 // server-side pagination if specified
 function getProducts (limit = null, offset = null) {
-  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id'
+  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id'
   queryString += ((limit !== null) && (offset !== null))
     ? ` LIMIT ${limit} OFFSET ${offset};`
     : ';'

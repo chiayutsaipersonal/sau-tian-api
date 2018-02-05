@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(11, 4),
       allowNull: false,
     },
+    customStockQty: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   }, {
     name: {
       singular: 'conversionFactor',
