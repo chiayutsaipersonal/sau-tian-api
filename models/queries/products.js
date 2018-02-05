@@ -25,7 +25,7 @@ module.exports = {
 
 // get report data in javascript object format
 function getProductReport () {
-  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor FROM products a INNER JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id;'
+  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a INNER JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id;'
   return db.sequelize
     .query(queryString)
     .spread((queryResults, meta) => {
@@ -46,7 +46,7 @@ function getProductReport () {
           unitPrice: entry.unitPrice,
           conversionFactorId: entry.conversionFactorId,
           asp: entry.asp,
-          stockQty: checkExistence(entry.stockQty, 0),
+          stockQty: checkExistence((entry.customStockQty !== null ? entry.customStockQty : entry.stockQty), 0),
         }
       }))
     })
