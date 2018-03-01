@@ -8,27 +8,33 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: () => uuidV4().toUpperCase(),
       validate: { isUUID: 4 },
     },
-    invoiceId: { // SNO
+    invoiceId: {
+      // SNO
       type: DataTypes.STRING,
       allowNull: false,
     },
-    clientId: { // CUSTNO
+    clientId: {
+      // CUSTNO
       type: DataTypes.STRING,
       allowNull: false,
     },
-    salesId: { // BNO
+    salesId: {
+      // BNO
       type: DataTypes.STRING,
       allowNull: false,
     },
-    productId: { // ITEMNO
+    productId: {
+      // ITEMNO
       type: DataTypes.STRING,
       allowNull: false,
     },
-    conversionFactorId: { // 3M SAP id
+    conversionFactorId: {
+      // 3M SAP id
       type: DataTypes.STRING,
       allowNull: false,
     },
-    unitPrice: { // PRICE
+    unitPrice: {
+      // PRICE
       type: DataTypes.DECIMAL(9, 2),
       allowNull: true,
     },

@@ -25,7 +25,8 @@ module.exports = {
 
 // get report data in javascript object format
 function getProductReport () {
-  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a INNER JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id;'
+  let queryString =
+    'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a INNER JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id;'
   return db.sequelize
     .query(queryString)
     .spread((queryResults, meta) => {
@@ -34,44 +35,55 @@ function getProductReport () {
         error.status = 503
         return Promise.reject(error)
       }
-      return Promise.resolve(queryResults.map(entry => {
-        return {
-          distributorId: 400005,
-          id: entry.id,
-          name: entry.name,
-          length: null,
-          width: null,
-          conversionFactor: checkExistence(entry.conversionFactor, 1),
-          unit: rectifyString(checkExistence(entry.unit, 'unspecified unit')),
-          unitPrice: entry.unitPrice,
-          conversionFactorId: entry.conversionFactorId,
-          asp: entry.asp,
-          stockQty: checkExistence((entry.customStockQty !== null ? entry.customStockQty : entry.stockQty), 0),
-        }
-      }))
+      return Promise.resolve(
+        queryResults.map(entry => {
+          return {
+            distributorId: 400005,
+            id: entry.id,
+            name: entry.name,
+            length: null,
+            width: null,
+            conversionFactor: checkExistence(entry.conversionFactor, 1),
+            unit: rectifyString(checkExistence(entry.unit, 'unspecified unit')),
+            unitPrice: entry.unitPrice,
+            conversionFactorId: entry.conversionFactorId,
+            asp: entry.asp,
+            stockQty: checkExistence(
+              entry.customStockQty !== null
+                ? entry.customStockQty
+                : entry.stockQty,
+              0
+            ),
+          }
+        })
+      )
     })
     .then(rawReportData => Promise.resolve(rawReportData))
     .catch(error => {
-      logging.error(error, './modules/queries/products.getProductReport() errored')
+      logging.error(
+        error,
+        './modules/queries/products.getProductReport() errored'
+      )
       return Promise.reject(error)
     })
 }
 
 // clear existing conversion factor data
 function resetConversionFactors () {
-  return db.ConversionFactors
-    .destroy({ where: {} })
+  return db.ConversionFactors.destroy({ where: {} })
     .then(() => Promise.resolve())
     .catch(error => {
-      logging.error(error, './modules/queries/products.resetConvsionFactors() errored')
+      logging.error(
+        error,
+        './modules/queries/products.resetConvsionFactors() errored'
+      )
       return Promise.reject(error)
     })
 }
 
 // insert a product record
 function insertProduct (record) {
-  return db.Products
-    .create(record)
+  return db.Products.create(record)
     .then(() => Promise.resolve())
     .catch(error => {
       logging.error(error, './modules/queries/products.insert() errored')
@@ -95,40 +107,51 @@ function batchSequentialInsert (data) {
         }
       })
       .catch(error => Promise.reject(error))
-  }).then(() => {
-    return Promise.resolve()
-  }).catch(error => {
-    logging.error(error, './modules/queries/products.batchSequentialInsert() errored')
-    return Promise.reject(error)
   })
+    .then(() => {
+      return Promise.resolve()
+    })
+    .catch(error => {
+      logging.error(
+        error,
+        './modules/queries/products.batchSequentialInsert() errored'
+      )
+      return Promise.reject(error)
+    })
 }
 
 // batch update 'customStockQty' field of conversionFactors table sequentially
 // only entries that matches both 'id' and 'productId'
 // are updated, omitted otherwise
 function batchSequentialUpdate (data) {
-  return db.ConversionFactors
-    .update(
-      { customStockQty: null },
-      { where: {} }
-    ).then(() => {
+  return db.ConversionFactors.update({ customStockQty: null }, { where: {} })
+    .then(() => {
       let convertedData = JSON.parse(data)
       return Promise.each(convertedData, entry => {
         let id = entry.id
         let productId = entry.productId
         let customStockQty = entry.customStockQty
-        return db.sequelize
-          .query(`UPDATE conversionFactors SET customStockQty = ${customStockQty} WHERE id = '${id}' AND productId = '${productId}';`)
-          // .spread((result, meta) => {
-          //   console.log(result)
-          //   return Promise.resolve()
-          // })
-          .catch(error => Promise.reject(error))
+        return (
+          db.sequelize
+            .query(
+              `UPDATE conversionFactors SET customStockQty = ${customStockQty} WHERE id = '${id}' AND productId = '${productId}';`
+            )
+            // .spread((result, meta) => {
+            //   console.log(result)
+            //   return Promise.resolve()
+            // })
+            .catch(error => Promise.reject(error))
+        )
       })
-    }).then(() => {
+    })
+    .then(() => {
       return Promise.resolve()
-    }).catch(error => {
-      logging.error(error, './modules/queries/products.batchSequentialInsert() errored')
+    })
+    .catch(error => {
+      logging.error(
+        error,
+        './modules/queries/products.batchSequentialInsert() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -136,33 +159,46 @@ function batchSequentialUpdate (data) {
 // insert a conversion factor record
 // all related records are removed before hand
 // e.g. same productId or same conversion factor Id
-function insertConversionFactor ({ id = null, productId = null, conversionFactor = null }) {
-  if ((id === null) || (productId === null) || (conversionFactor === null)) {
+function insertConversionFactor ({
+  id = null,
+  productId = null,
+  conversionFactor = null,
+}) {
+  if (id === null || productId === null || conversionFactor === null) {
     let error = new Error('Function parameter requirement(s) not met')
     error.status = 400
     return Promise.reject(error)
   }
-  return db.sequelize.transaction(transaction => {
-    let deleteQuery = `DELETE FROM conversionFactors WHERE productId = '${productId}' OR  id = '${id}';`
-    let insertQuery = `INSERT INTO conversionFactors (id, productId, conversionFactor) VALUES ('${id}', '${productId}', ${conversionFactor});`
-    return db.sequelize
-      .query(deleteQuery, { transaction })
-      .then(() => db.sequelize.query(insertQuery, { transaction }))
-  }).catch(error => {
-    logging.error(error, './modules/queries/products.insertConversionFactor() errored')
-    return Promise.reject(error)
-  })
+  return db.sequelize
+    .transaction(transaction => {
+      let deleteQuery = `DELETE FROM conversionFactors WHERE productId = '${productId}' OR  id = '${id}';`
+      let insertQuery = `INSERT INTO conversionFactors (id, productId, conversionFactor) VALUES ('${id}', '${productId}', ${conversionFactor});`
+      return db.sequelize
+        .query(deleteQuery, { transaction })
+        .then(() => db.sequelize.query(insertQuery, { transaction }))
+    })
+    .catch(error => {
+      logging.error(
+        error,
+        './modules/queries/products.insertConversionFactor() errored'
+      )
+      return Promise.reject(error)
+    })
 }
 
 // backup conversionFactor data
 function backupConvFactorData () {
   let timeString = moment.tz().format('YYYYMMDDHHmmss')
   let location = path.resolve(`./data/conversionFactors.${timeString}.json`)
-  return db.ConversionFactors
-    .findAll({ attributes: { exclude: ['customStockQty'] } })
+  return db.ConversionFactors.findAll({
+    attributes: { exclude: ['customStockQty'] },
+  })
     .then(data => fs.outputJson(location, data))
     .catch(error => {
-      logging.error(error, './modules/queries/products.backupConvFactorData() errored')
+      logging.error(
+        error,
+        './modules/queries/products.backupConvFactorData() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -176,15 +212,17 @@ function findDuplicates (productId, conversionFactorId) {
     .query(queryString)
     .spread((data, meta) => Promise.resolve(data))
     .catch(error => {
-      logging.error(error, './modules/queries/products.findDuplicates() errored')
+      logging.error(
+        error,
+        './modules/queries/products.findDuplicates() errored'
+      )
       return Promise.reject(error)
     })
 }
 
 // find a product instance
 function getProduct (productId) {
-  return db.Products
-    .findById(productId)
+  return db.Products.findById(productId)
     .then(productInstance => Promise.resolve(productInstance))
     .catch(error => {
       logging.error(error, './modules/queries/products.getProduct() errored')
@@ -195,10 +233,12 @@ function getProduct (productId) {
 // get product listing ordered by productId, and does
 // server-side pagination if specified
 function getProducts (limit = null, offset = null) {
-  let queryString = 'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id'
-  queryString += ((limit !== null) && (offset !== null))
-    ? ` LIMIT ${limit} OFFSET ${offset};`
-    : ';'
+  let queryString =
+    'SELECT a.*, b.id AS \'conversionFactorId\', b.conversionFactor, b.customStockQty FROM products a LEFT JOIN conversionFactors b ON a.id = b.productId ORDER BY a.id'
+  queryString +=
+    limit !== null && offset !== null
+      ? ` LIMIT ${limit} OFFSET ${offset};`
+      : ';'
   return db.sequelize
     .query(queryString)
     .spread((data, meta) => Promise.resolve(data))
@@ -225,7 +265,10 @@ function removeConvFactorInfo (productId) {
     .query(`DELETE FROM conversionFactors WHERE productId = '${productId}';`)
     .then(() => Promise.resolve())
     .catch(error => {
-      logging.error(error, './modules/queries/products.removeConvFactorInfo() errored')
+      logging.error(
+        error,
+        './modules/queries/products.removeConvFactorInfo() errored'
+      )
       return Promise.reject(error)
     })
 }

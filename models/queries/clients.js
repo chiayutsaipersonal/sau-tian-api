@@ -15,36 +15,54 @@ module.exports = {
 
 function getClientReport () {
   let queryOptions = {
-    attributes: ['id', 'name', 'registrationId', 'contact', 'zipCode', 'address', 'telephone', 'fax', 'type'],
+    attributes: [
+      'id',
+      'name',
+      'registrationId',
+      'contact',
+      'zipCode',
+      'address',
+      'telephone',
+      'fax',
+      'type',
+    ],
     where: { areaId: { [between]: [1, 4] } },
     order: ['id'],
   }
-  return db.Clients
-    .findAll(queryOptions)
+  return db.Clients.findAll(queryOptions)
     .then(queryResults => {
       if (queryResults.length === 0) {
         let error = new Error('Client data query returned no results')
         error.status = 503
         return Promise.reject(error)
       }
-      return Promise.resolve(queryResults.map(entry => {
-        return {
-          distributorId: 400005,
-          id: entry.id,
-          name: rectifyString(checkExistence(entry.name, 'Empty Company Name')),
-          registrationId: entry.registrationId,
-          contact: rectifyString(entry.contact),
-          zipCode: checkExistence(entry.zipCode, '00000'),
-          address: rectifyString(checkExistence(entry.address, 'Empty Address')),
-          telephone: rectifyString(entry.telephone),
-          fax: rectifyString(entry.fax),
-          type: entry.type,
-        }
-      }))
+      return Promise.resolve(
+        queryResults.map(entry => {
+          return {
+            distributorId: 400005,
+            id: entry.id,
+            name: rectifyString(
+              checkExistence(entry.name, 'Empty Company Name')
+            ),
+            registrationId: entry.registrationId,
+            contact: rectifyString(entry.contact),
+            zipCode: checkExistence(entry.zipCode, '00000'),
+            address: rectifyString(
+              checkExistence(entry.address, 'Empty Address')
+            ),
+            telephone: rectifyString(entry.telephone),
+            fax: rectifyString(entry.fax),
+            type: entry.type,
+          }
+        })
+      )
     })
     .then(rawReportData => Promise.resolve(rawReportData))
     .catch(error => {
-      logging.error(error, './modules/queries/products.getClientReport() errored')
+      logging.error(
+        error,
+        './modules/queries/products.getClientReport() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -54,7 +72,7 @@ function checkExistence (dataValue, placeholder) {
 }
 
 function rectifyString (string) {
-  if ((string === null) || (string === '')) {
+  if (string === null || string === '') {
     return string
   } else {
     return string.replace(',', '').replace('\'', '')
@@ -68,12 +86,11 @@ function getClients (limit = null, offset = null) {
     where: { areaId: { [between]: [1, 4] } },
     order: ['id'],
   }
-  if ((limit !== null) && (offset !== null)) {
+  if (limit !== null && offset !== null) {
     options.limit = limit
     options.offset = offset
   }
-  return db.Clients
-    .findAll(options)
+  return db.Clients.findAll(options)
     .then(data => Promise.resolve(data))
     .catch(error => {
       logging.error(error, './modules/queries/products.getClients() errored')
@@ -88,11 +105,13 @@ function getSimpleClientList () {
     attributes: ['id', 'name', 'areaId'],
     order: ['areaId', 'id'],
   }
-  return db.Clients
-    .findAll(options)
+  return db.Clients.findAll(options)
     .then(data => Promise.resolve(data))
     .catch(error => {
-      logging.error(error, './modules/queries/products.getSimpleClientList() errored')
+      logging.error(
+        error,
+        './modules/queries/products.getSimpleClientList() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -104,7 +123,10 @@ function getMonthlyPatrons (startDate, endDate) {
     .query(queryString)
     .spread((data, meta) => Promise.resolve(data))
     .catch(error => {
-      logging.error(error, './modules/queries/products.getMonthlyPatrons() errored')
+      logging.error(
+        error,
+        './modules/queries/products.getMonthlyPatrons() errored'
+      )
       return Promise.reject(error)
     })
 }

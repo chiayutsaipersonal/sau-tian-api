@@ -13,21 +13,19 @@ module.exports = getRecordCountFn => {
     if (recordCount === 0) return next()
 
     // determine per_page value
-    let perPage = parseInt(query.per_page) > recordCount
-      ? recordCount
-      : parseInt(query.per_page) < 1
-        ? 1
-        : parseInt(query.per_page)
+    let perPage =
+      parseInt(query.per_page) > recordCount
+        ? recordCount
+        : parseInt(query.per_page) < 1 ? 1 : parseInt(query.per_page)
 
     // calculate last page
     let lastPage = Math.ceil(recordCount / perPage)
 
     // determin current page
-    let currentPage = parseInt(query.page) > lastPage
-      ? lastPage
-      : parseInt(query.page) < 1
-        ? 1
-        : parseInt(query.page)
+    let currentPage =
+      parseInt(query.page) > lastPage
+        ? lastPage
+        : parseInt(query.page) < 1 ? 1 : parseInt(query.page)
 
     let baseStructure = {
       page: null,
@@ -67,12 +65,12 @@ module.exports = getRecordCountFn => {
     }
 
     // place additional url query properties back into the generated url's
-    ['first', 'prev', 'self', 'next', 'last'].forEach(linkHeaderProp => {
+    ;['first', 'prev', 'self', 'next', 'last'].forEach(linkHeaderProp => {
       if (linkHeaderProp in linkHeader) {
         for (let urlQueryProp in query) {
-          if ((urlQueryProp !== 'page') && (urlQueryProp !== 'per_page')) {
+          if (urlQueryProp !== 'page' && urlQueryProp !== 'per_page') {
             linkHeader[linkHeaderProp].url += `&${urlQueryProp}`
-            if (query[urlQueryProp]) linkHeader[linkHeaderProp].url += `=${query[urlQueryProp]}`
+            if (query[urlQueryProp]) { linkHeader[linkHeaderProp].url += `=${query[urlQueryProp]}` }
           }
         }
       }

@@ -26,7 +26,11 @@ function hydrateWorkingData () {
   return verifyLiveDataSource()
     .then(() => extractLiveData())
     .then(liveData => buildWorkingData(db, liveData))
-    .then(() => Promise.resolve(`${dbConfig.dialect} working database hydrated with live data...`))
+    .then(() =>
+      Promise.resolve(
+        `${dbConfig.dialect} working database hydrated with live data...`
+      )
+    )
     .catch(error => Promise.reject(error))
 }
 
@@ -42,6 +46,8 @@ function initialize () {
       db.ready = false
       return Promise.resolve()
     })
-    .then(() => Promise.resolve(`${dbConfig.dialect} database structure initialized...`))
+    .then(() =>
+      Promise.resolve(`${dbConfig.dialect} database structure initialized...`)
+    )
     .catch(error => Promise.reject(error))
 }

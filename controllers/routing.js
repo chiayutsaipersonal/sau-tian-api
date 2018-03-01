@@ -41,14 +41,18 @@ function setupPreRoutingMiddlewares (app) {
     app.use(favicon(path.resolve('./dist/static/favicon.ico')))
   }
   if (eVars.NODE_ENV === 'development') app.use(cors())
-  app.use(morgan(eVars.NODE_ENV === 'production' ? 'short' : 'dev', {
-    skip: (req, res) => res.statusCode < 400,
-    stream: process.stderr,
-  }))
-  app.use(morgan(eVars.NODE_ENV === 'production' ? 'short' : 'dev', {
-    skip: (req, res) => res.statusCode >= 400,
-    stream: process.stdout,
-  }))
+  app.use(
+    morgan(eVars.NODE_ENV === 'production' ? 'short' : 'dev', {
+      skip: (req, res) => res.statusCode < 400,
+      stream: process.stderr,
+    })
+  )
+  app.use(
+    morgan(eVars.NODE_ENV === 'production' ? 'short' : 'dev', {
+      skip: (req, res) => res.statusCode >= 400,
+      stream: process.stdout,
+    })
+  )
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use('/sauTian', express.static(path.resolve('./dist'))) // serve static assets

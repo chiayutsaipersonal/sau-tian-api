@@ -28,29 +28,36 @@ function getInvoiceReport (startDate, endDate) {
         error.status = 503
         return Promise.reject(error)
       }
-      return Promise.resolve(queryResults.map(entry => {
-        return {
-          distributorId: 400005,
-          clientId: rectifyString(checkExistence(entry.clientId)),
-          productId: rectifyString(checkExistence(entry.productId)),
-          date: moment(new Date(entry.date)).format('YYYYMMDD'),
-          currency: 'NTD',
-          invoiceValue: calculateInvoiceValue(entry),
-          quantity: entry._quantity === null ? entry.quantity : entry._quantity,
-          // employeeId: checkExistence(entry.employeeId, '0001'),
-          employeeId: '0002', // setting according to client demands
-        }
-      }))
+      return Promise.resolve(
+        queryResults.map(entry => {
+          return {
+            distributorId: 400005,
+            clientId: rectifyString(checkExistence(entry.clientId)),
+            productId: rectifyString(checkExistence(entry.productId)),
+            date: moment(new Date(entry.date)).format('YYYYMMDD'),
+            currency: 'NTD',
+            invoiceValue: calculateInvoiceValue(entry),
+            quantity:
+              entry._quantity === null ? entry.quantity : entry._quantity,
+            // employeeId: checkExistence(entry.employeeId, '0001'),
+            employeeId: '0002', // setting according to client demands
+          }
+        })
+      )
     })
     .then(rawReportData => Promise.resolve(rawReportData))
     .catch(error => {
-      logging.error(error, './modules/queries/products.getInvoiceReport() errored')
+      logging.error(
+        error,
+        './modules/queries/products.getInvoiceReport() errored'
+      )
       return Promise.reject(error)
     })
 }
 
 function calculateInvoiceValue (record) {
-  let unitPrice = record._unitPrice !== null ? record._unitPrice : record.unitPrice
+  let unitPrice =
+    record._unitPrice !== null ? record._unitPrice : record.unitPrice
   let quantity = record._quantity !== null ? record._quantity : record.quantity
   return unitPrice * quantity
 }
@@ -108,7 +115,10 @@ function deleteCustomSalesData (startDate, endDate) {
     .query(deleteQuery)
     .then(() => Promise.resolve())
     .catch(error => {
-      logging.error(error, 'modules/queries/invoices.deleteCustomSalesData() errored')
+      logging.error(
+        error,
+        'modules/queries/invoices.deleteCustomSalesData() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -120,18 +130,23 @@ function deleteCustomSalesDataByProduct (startDate, endDate, productId) {
     .query(deleteQuery)
     .then(() => Promise.resolve())
     .catch(error => {
-      logging.error(error, 'modules/queries/invoices.deleteCustomSalesData() errored')
+      logging.error(
+        error,
+        'modules/queries/invoices.deleteCustomSalesData() errored'
+      )
       return Promise.reject(error)
     })
 }
 
 // get customSalesData record by id
 function getCustomSalesRecord (id) {
-  return db.CustomSalesData
-    .findById(id)
+  return db.CustomSalesData.findById(id)
     .then(data => Promise.resolve(data || {}))
     .catch(error => {
-      logging.error(error, 'modules/queries/invoices.getCustomSalesRecord() errored')
+      logging.error(
+        error,
+        'modules/queries/invoices.getCustomSalesRecord() errored'
+      )
       return Promise.reject(error)
     })
 }
@@ -141,21 +156,36 @@ function getCustomSalesRecord (id) {
 // insert validated working data entries
 function alignCustomSalesData (startDate, endDate, validatedData) {
   let deleteQuery = `DELETE FROM customSalesData WHERE invoiceId IN (SELECT id FROM invoices WHERE date BETWEEN '${startDate}' AND '${endDate}');`
-  return db.sequelize.transaction(transaction => {
-    return db.sequelize
-      .query(deleteQuery, { transaction })
-      .then(() => db.CustomSalesData.bulkCreate(validatedData, { transaction }))
-      .catch(error => Promise.reject(error))
-  }).catch(error => {
-    logging.error(error, 'modules/queries/invoices.alignCustomSalesData() errored')
-    return Promise.reject(error)
-  })
+  return db.sequelize
+    .transaction(transaction => {
+      return db.sequelize
+        .query(deleteQuery, { transaction })
+        .then(() =>
+          db.CustomSalesData.bulkCreate(validatedData, { transaction })
+        )
+        .catch(error => Promise.reject(error))
+    })
+    .catch(error => {
+      logging.error(
+        error,
+        'modules/queries/invoices.alignCustomSalesData() errored'
+      )
+      return Promise.reject(error)
+    })
 }
 
 // prep record data from request POST data
 // without empty fields
 function extractReqBodyData (reqSubmission) {
-  let requiredFields = ['customSalesDataId', 'invoiceId', 'clientId', 'salesId', 'productId', 'conversionFactorId', 'unitPrice']
+  let requiredFields = [
+    'customSalesDataId',
+    'invoiceId',
+    'clientId',
+    'salesId',
+    'productId',
+    'conversionFactorId',
+    'unitPrice',
+  ]
   requiredFields.forEach(field => {
     if (reqSubmission[field] === undefined) {
       let error = new Error(`Required field '${field}' is missing`)
@@ -173,11 +203,11 @@ function extractReqBodyData (reqSubmission) {
   customRecord.productId = reqSubmission.productId
   customRecord.conversionFactorId = reqSubmission.conversionFactorId
   customRecord.unitPrice = reqSubmission.unitPrice
-  if (reqSubmission._preserved !== undefined) customRecord._preserved = reqSubmission._preserved
-  if (reqSubmission._clientId !== undefined) customRecord._clientId = reqSubmission._clientId
-  if (reqSubmission._unitPrice !== undefined) customRecord._unitPrice = reqSubmission._unitPrice
-  if (reqSubmission._quantity !== undefined) customRecord._quantity = reqSubmission._quantity
-  if (reqSubmission._employeeId !== undefined) customRecord._employeeId = reqSubmission._employeeId
+  if (reqSubmission._preserved !== undefined) { customRecord._preserved = reqSubmission._preserved }
+  if (reqSubmission._clientId !== undefined) { customRecord._clientId = reqSubmission._clientId }
+  if (reqSubmission._unitPrice !== undefined) { customRecord._unitPrice = reqSubmission._unitPrice }
+  if (reqSubmission._quantity !== undefined) { customRecord._quantity = reqSubmission._quantity }
+  if (reqSubmission._employeeId !== undefined) { customRecord._employeeId = reqSubmission._employeeId }
   return Promise.resolve(customRecord)
 }
 
@@ -264,8 +294,7 @@ function liveDataQueryString (startDate, endDate) {
 
 // update or insert custom sales data record
 function recordUpsert (recordData) {
-  return db.CustomSalesData
-    .upsert(recordData)
+  return db.CustomSalesData.upsert(recordData)
     .then(() => Promise.resolve())
     .catch(error => {
       logging.error(error, 'modules/queries/invoices.record() errored')

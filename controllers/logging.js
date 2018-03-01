@@ -20,7 +20,9 @@ function warningToConsole (warningMessage) {
 
 function errorToConsole (error, customMessage = null) {
   if (customMessage) {
-    console.error(`${chalk.bgRed.bold(error.name)} - ${chalk.red.bold(customMessage)}`)
+    console.error(
+      `${chalk.bgRed.bold(error.name)} - ${chalk.red.bold(customMessage)}`
+    )
   } else {
     console.error(`${chalk.bgRed.bold(error.name)}`)
   }

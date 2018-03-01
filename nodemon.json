@@ -4,9 +4,7 @@
   "colors": true,
   "ext": "js hbs",
   "delay": 200,
-  "watch": [
-    "."
-  ],
+  "watch": ["."],
   "ignore": [],
   "env": {
     "NODE_ENV": "development"

@@ -16,10 +16,12 @@ const models = [
 module.exports = () => {
   return Promise.each(models, model => {
     return utilityQueries.syncModel(model.reference, model.force)
-  }).then(() => {
-    return Promise.resolve()
-  }).catch(error => {
-    logging.error(error, 'Working DB models synchronization failure')
-    return Promise.reject(error)
   })
+    .then(() => {
+      return Promise.resolve()
+    })
+    .catch(error => {
+      logging.error(error, 'Working DB models synchronization failure')
+      return Promise.reject(error)
+    })
 }

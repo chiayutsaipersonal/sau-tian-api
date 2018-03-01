@@ -20,14 +20,14 @@ function dropSchema (schema) {
 }
 
 function syncModel (model, force = false) {
-  let syncOp = force
-    ? db[model].sync({ force })
-    : db[model].sync()
+  let syncOp = force ? db[model].sync({ force }) : db[model].sync()
   return syncOp
     .then(result => {
-      logging.console(force
-        ? `${model} table synchronized (refreshed)`
-        : `${model} table synchronized`)
+      logging.console(
+        force
+          ? `${model} table synchronized (refreshed)`
+          : `${model} table synchronized`
+      )
       return Promise.resolve()
     })
     .catch(error => {

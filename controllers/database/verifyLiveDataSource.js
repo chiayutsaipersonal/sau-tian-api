@@ -15,8 +15,7 @@ const liveDataFiles = [
 ]
 
 module.exports = () => {
-  return Promise
-    .each(liveDataFiles, file => validatePath(file))
+  return Promise.each(liveDataFiles, file => validatePath(file))
     .then(() => {
       logging.warning('Live data source verification successful')
       return Promise.resolve()
@@ -28,7 +27,8 @@ module.exports = () => {
 }
 
 function validatePath (filePath) {
-  return fs.pathExists(filePath)
+  return fs
+    .pathExists(filePath)
     .then(result => {
       if (result) {
         logging.console(`${filePath} is verified`)
@@ -37,5 +37,6 @@ function validatePath (filePath) {
         let error = new Error(`${filePath} does not exist`)
         return Promise.reject(error)
       }
-    }).catch(error => Promise.reject(error))
+    })
+    .catch(error => Promise.reject(error))
 }

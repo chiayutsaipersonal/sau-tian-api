@@ -13,7 +13,10 @@ const models = [
 
 module.exports = db => {
   models.forEach(model => {
-    let modelPath = path.join(path.resolve('./models/definitions'), model.definition)
+    let modelPath = path.join(
+      path.resolve('./models/definitions'),
+      model.definition
+    )
     db[model.reference] = require(modelPath)(db.sequelize, db.Sequelize)
     logging.console(`${model.reference} model is registered`)
   })

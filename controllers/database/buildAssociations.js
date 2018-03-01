@@ -27,21 +27,29 @@ module.exports = db => {
     },
   })
 
-  db.Invoices.belongsTo(db.Clients, {
-    constraints: true,
-    onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT',
-  }, {
-    foreignKey: 'clientId',
-    targetKey: 'id',
-  })
+  db.Invoices.belongsTo(
+    db.Clients,
+    {
+      constraints: true,
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    {
+      foreignKey: 'clientId',
+      targetKey: 'id',
+    }
+  )
 
-  db.Clients.hasMany(db.Invoices, {
-    constraints: true,
-    onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT',
-  }, {
-    foreignKey: 'clientId',
-    targetKey: 'id',
-  })
+  db.Clients.hasMany(
+    db.Invoices,
+    {
+      constraints: true,
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    {
+      foreignKey: 'clientId',
+      targetKey: 'id',
+    }
+  )
 }

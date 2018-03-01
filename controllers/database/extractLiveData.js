@@ -25,10 +25,18 @@ module.exports = () => {
     sales: createParser(path.join(location, 'saldet.DBF'), 'big5'),
   }
 
-  parsers.clients.on('record', record => { recordClientData(record, data.clients) })
-  parsers.products.on('record', record => { recordProductData(record, data.products) })
-  parsers.invoices.on('record', record => { recordInvoiceData(record, data.invoices) })
-  parsers.sales.on('record', record => { recordSalesData(record, data.sales) })
+  parsers.clients.on('record', record => {
+    recordClientData(record, data.clients)
+  })
+  parsers.products.on('record', record => {
+    recordProductData(record, data.products)
+  })
+  parsers.invoices.on('record', record => {
+    recordInvoiceData(record, data.invoices)
+  })
+  parsers.sales.on('record', record => {
+    recordSalesData(record, data.sales)
+  })
 
   let endEventHandles = {
     clients: getEndEventHandle(parsers.clients),
@@ -41,13 +49,12 @@ module.exports = () => {
   parsers.invoices.parse()
   parsers.sales.parse()
 
-  return Promise
-    .all([
-      endEventHandles.clients,
-      endEventHandles.products,
-      endEventHandles.invoices,
-      endEventHandles.sales,
-    ])
+  return Promise.all([
+    endEventHandles.clients,
+    endEventHandles.products,
+    endEventHandles.invoices,
+    endEventHandles.sales,
+  ])
     .then(() => {
       logging.console('Live data extracted')
       return Promise.resolve(data)
@@ -68,23 +75,27 @@ function recordClientData (record, clientRecords) {
       id: record.CUSTNO,
       name: record.CUSTABBR.trim() === '' ? null : record.CUSTABBR.toString(),
       contact: record.CON1.trim() === '' ? null : record.CON1.toString(),
-      registrationId: record.UNIFORM.trim() === '' ? null : record.UNIFORM.toString(),
+      registrationId:
+        record.UNIFORM.trim() === '' ? null : record.UNIFORM.toString(),
       zipCode: record.COMPZIP.trim() === '' ? null : record.COMPZIP.toString(),
       areaId: record.AREANO.trim() === '' ? null : parseInt(record.AREANO),
-      address: record.COMPADDR.trim() === '' ? null : record.COMPADDR.toString(),
+      address:
+        record.COMPADDR.trim() === '' ? null : record.COMPADDR.toString(),
       telephone: record.TEL1.trim() === '' ? null : record.TEL1.toString(),
       fax: record.FAX.trim() === '' ? null : record.FAX.toString(),
       // find if in CUSTUD2 field any words that matches 'rebate', then set this to 'R'
       // to represent this is a rebate client
-      type: record.CUSTUD2.toString().toLowerCase().search('rebate') >= 0
-        ? 'R'
-        : null,
+      type:
+        record.CUSTUD2.toString()
+          .toLowerCase()
+          .search('rebate') >= 0
+          ? 'R'
+          : null,
     })
   }
 }
 
 function recordProductData (record, productRecords) {
-  // console.log(record.)
   if (!record['@deleted']) {
     productRecords.push({
       id: record.ITEMNO,
@@ -113,23 +124,25 @@ function recordInvoiceData (record, invoiceRecords) {
 
 function recordSalesData (record, salesRecords) {
   if (
-    (!record['@deleted']) &&
+    !record['@deleted'] &&
     // skipping products that does not actually exist in the items data table
     // hardcoded according to the actual data
-    (record.ITEMNO !== 'G-85034') &&
-    (record.ITEMNO !== 'B890393') &&
-    (record.ITEMNO !== 'B25290')
+    record.ITEMNO !== 'G-85034' &&
+    record.ITEMNO !== 'B890393' &&
+    record.ITEMNO !== 'B25290'
   ) {
     salesRecords.push({
       id: record.BNO,
       invoiceId: record.SNO,
       productId: record.ITEMNO,
       quantity: isNaN(record.QTY) ? null : parseInt(record.QTY),
-      unitPrice: isNaN(record.PRICE) ? null : parseInt(record.PRICE),
+      unitPrice: isNaN(record.PRICE) ? null : parseFloat(record.PRICE),
     })
   }
 }
 
 function getEndEventHandle (parser) {
-  return new Promise(resolve => { parser.on('end', resolve) })
+  return new Promise(resolve => {
+    parser.on('end', resolve)
+  })
 }

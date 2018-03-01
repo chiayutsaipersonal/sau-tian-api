@@ -30,7 +30,7 @@ module.exports = {
 }
 
 function redirect (req, res, next) {
-  if (('resRedirect' in req) || (res.statusCode === 404)) {
+  if ('resRedirect' in req || res.statusCode === 404) {
     return res
       .status(res.statusCode || 301)
       .redirect(req.resRedirect)
@@ -104,9 +104,15 @@ function json (req, res, next) {
         perPage: req.linkHeader.last.per_page,
         currentPage: req.linkHeader.self.page,
         first: req.linkHeader.first.url,
-        prev: req.linkHeader.prev === undefined ? undefined : req.linkHeader.prev.url,
+        prev:
+          req.linkHeader.prev === undefined
+            ? undefined
+            : req.linkHeader.prev.url,
         self: req.linkHeader.self.url,
-        next: req.linkHeader.next === undefined ? undefined : req.linkHeader.next.url,
+        next:
+          req.linkHeader.next === undefined
+            ? undefined
+            : req.linkHeader.next.url,
         last: req.linkHeader.last.url,
       },
     })
@@ -149,9 +155,10 @@ function error (error, req, res, next) {
   let resJson = {
     method: req.method.toLowerCase(),
     endpoint: `${hostUrl}${req.originalUrl}`,
-    message: 'customMessage' in error
-      ? error.customMessage
-      : cannedMessage[res.statusCode.toString()],
+    message:
+      'customMessage' in error
+        ? error.customMessage
+        : cannedMessage[res.statusCode.toString()],
   }
   if (process.env.NODE_ENV !== 'production') {
     resJson.error = {
@@ -167,7 +174,5 @@ function error (error, req, res, next) {
     }
   }
   delete error.customMessage
-  return res
-    .type('application/json;charset=utf-8')
-    .json(resJson)
+  return res.type('application/json;charset=utf-8').json(resJson)
 }
