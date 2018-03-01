@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      dept: {
+        // IKINDNO
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       stockQty: {
         // STOCKQTY
         type: DataTypes.INTEGER,

@@ -203,11 +203,21 @@ function extractReqBodyData (reqSubmission) {
   customRecord.productId = reqSubmission.productId
   customRecord.conversionFactorId = reqSubmission.conversionFactorId
   customRecord.unitPrice = reqSubmission.unitPrice
-  if (reqSubmission._preserved !== undefined) { customRecord._preserved = reqSubmission._preserved }
-  if (reqSubmission._clientId !== undefined) { customRecord._clientId = reqSubmission._clientId }
-  if (reqSubmission._unitPrice !== undefined) { customRecord._unitPrice = reqSubmission._unitPrice }
-  if (reqSubmission._quantity !== undefined) { customRecord._quantity = reqSubmission._quantity }
-  if (reqSubmission._employeeId !== undefined) { customRecord._employeeId = reqSubmission._employeeId }
+  if (reqSubmission._preserved !== undefined) {
+    customRecord._preserved = reqSubmission._preserved
+  }
+  if (reqSubmission._clientId !== undefined) {
+    customRecord._clientId = reqSubmission._clientId
+  }
+  if (reqSubmission._unitPrice !== undefined) {
+    customRecord._unitPrice = reqSubmission._unitPrice
+  }
+  if (reqSubmission._quantity !== undefined) {
+    customRecord._quantity = reqSubmission._quantity
+  }
+  if (reqSubmission._employeeId !== undefined) {
+    customRecord._employeeId = reqSubmission._employeeId
+  }
   return Promise.resolve(customRecord)
 }
 
@@ -265,6 +275,7 @@ function liveDataQueryString (startDate, endDate) {
           products.id AS productId,
           conversionFactors.id AS conversionFactorId,
           products.sapId,
+          products.dept,
           customSalesData.id AS customSalesDataId,
           customSalesData._preserved,
           customSalesData._clientId,

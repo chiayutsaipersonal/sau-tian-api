@@ -41,6 +41,7 @@ function getProductReport () {
             distributorId: 400005,
             id: entry.id,
             name: entry.name,
+            dept: entry.dept,
             length: null,
             width: null,
             conversionFactor: checkExistence(entry.conversionFactor, 1),
