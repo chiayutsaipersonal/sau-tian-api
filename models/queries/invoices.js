@@ -59,7 +59,7 @@ function calculateInvoiceValue (record) {
   let unitPrice =
     record._unitPrice !== null ? record._unitPrice : record.unitPrice
   let quantity = record._quantity !== null ? record._quantity : record.quantity
-  return unitPrice * quantity
+  return Math.round(unitPrice * quantity * 100) / 100
 }
 
 // return live data query SQL string
