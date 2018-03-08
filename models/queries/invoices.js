@@ -56,10 +56,14 @@ function getInvoiceReport (startDate, endDate) {
 }
 
 function calculateInvoiceValue (record) {
+  // https://coderwall.com/p/rca5gq/javascript-painless-decimal-multiplication
+  // multiply decimal numbers before operation seems to fix decimal being neglected issue
   let unitPrice =
     record._unitPrice !== null ? record._unitPrice : record.unitPrice
+  unitPrice = unitPrice * 100
   let quantity = record._quantity !== null ? record._quantity : record.quantity
-  return Math.round(unitPrice * quantity * 100) / 100
+  quantity = quantity * 100
+  return unitPrice * quantity / 10000
 }
 
 // return live data query SQL string
