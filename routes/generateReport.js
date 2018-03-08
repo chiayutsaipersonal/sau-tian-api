@@ -96,10 +96,13 @@ function generateTextData (data, sequence) {
   let textData = ''
   data.forEach(entry => {
     sequence.forEach((fieldName, index) => {
+      let isNull = entry[fieldName] === null
+      let isUndefined = entry[fieldName] === undefined
+      let fieldValue = isNull || isUndefined ? '' : entry[fieldName].toString()
       if (index === sequence.length - 1) {
-        textData += (entry[fieldName] || '') + '\n'
+        textData += fieldValue + '\n'
       } else {
-        textData += (entry[fieldName] || '') + ','
+        textData += fieldValue + ','
       }
     })
   })
