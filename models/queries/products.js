@@ -46,7 +46,7 @@ function getProductReport () {
             width: null,
             conversionFactor: checkExistence(entry.conversionFactor, 1),
             unit: rectifyString(checkExistence(entry.unit, 'unspecified unit')),
-            unitPrice: entry.unitPrice,
+            unitPrice: null, // "recommended retail price" is intentionally kept empty
             conversionFactorId: entry.conversionFactorId,
             asp: entry.asp,
             stockQty: checkExistence(
