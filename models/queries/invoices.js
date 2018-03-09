@@ -32,7 +32,9 @@ function getInvoiceReport (startDate, endDate) {
         queryResults.map(entry => {
           return {
             distributorId: 400005,
-            clientId: rectifyString(checkExistence(entry.clientId)),
+            clientId: rectifyString(
+              checkExistence(entry._clientId, entry.clientId)
+            ),
             productId: rectifyString(checkExistence(entry.productId)),
             date: moment(new Date(entry.date)).format('YYYYMMDD'),
             currency: 'NTD',
