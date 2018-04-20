@@ -100,7 +100,7 @@ function generateTextData (data, sequence) {
       let isUndefined = entry[fieldName] === undefined
       let fieldValue = isNull || isUndefined ? '' : entry[fieldName].toString()
       if (index === sequence.length - 1) {
-        textData += fieldValue + '\n'
+        textData += fieldValue + '\r\n'
       } else {
         textData += fieldValue + ','
       }
