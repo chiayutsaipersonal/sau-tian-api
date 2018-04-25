@@ -1,4 +1,5 @@
 const archiver = require('archiver')
+const encoding = require('encoding')
 const express = require('express')
 const Promise = require('bluebird')
 
@@ -106,5 +107,6 @@ function generateTextData (data, sequence) {
       }
     })
   })
-  return textData
+  // return textData
+  return encoding.convert(textData, 'BIG5')
 }
