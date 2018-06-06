@@ -65,7 +65,7 @@ function calculateInvoiceValue (record) {
   unitPrice = unitPrice * 100
   let quantity = record._quantity !== null ? record._quantity : record.quantity
   quantity = quantity * 100
-  return unitPrice * quantity / 10000
+  return (unitPrice * quantity) / 10000
 }
 
 // return live data query SQL string
@@ -110,7 +110,7 @@ function reportDataQueryString (startDate, endDate) {
                         (customSalesData.unitPrice = sales.unitPrice)
     WHERE invoices.date BETWEEN '${startDate}' AND '${endDate}' AND
       (customSalesData._preserved = 1 OR
-      clients.areaId IS NOT NULL)
+      clients.areaId BETWEEN 1 AND 4)
     ORDER BY date, products.id;`
 }
 
